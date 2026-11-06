@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  「正在播」那一行最左侧的橙色指示条（3dp × 28dp 圆角）。
+
+  这是整台界面的签名细节：一条调频指针。它只出现在正在播的那一行，
+  和右上角的时间轴刻度、橙色的主播放键是同一套语言。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/accent" />
+    <corners android:radius="2dp" />
+</shape>

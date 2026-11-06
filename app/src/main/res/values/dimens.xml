@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  车机两栏版面的尺寸基准（默认值）
+  ============================================================
+
+  这份是「标准密度车机（xhdpi / 2x，可用 960×540dp）」的基准值，
+  也就是 v2.0 ~ v2.1 界面改版时的原尺寸。
+
+  为什么这里只放车机、不放手机：
+    手机版面（layout/）的尺寸仍写死在各自 XML 里，与这套 car_* 无关。
+    只有车机版面（layout-h480dp-land/ 与 styles.xml 里的 CtrlButton 系）
+    引用这里的 @dimen/car_*。
+
+  为什么另有一份 values-sw1080dp/dimens.xml：
+    实测星愿车机（IHU801G / E22H___5，Android 9）真实密度是 160 dpi（mdpi，
+    density=1.0），可用内容区 1920×968dp、整屏 sw=1080dp——不是早前以为的
+    xhdpi 2x。1dp 物理尺寸恒定，密度从 2x 掉到 1x 意味着屏幕的 dp 总量翻倍，
+    同一套 dp 值在这台车上只会显示成「一半大」。
+    所以给 sw>=1080dp 的低密度真车单独放大一倍（见 values-sw1080dp/），
+    Carlink 投屏（sw≈711dp）与 2x 车机仍用这里的原值。
+-->
+<resources>
+
+    <!-- ==================== 字号（sp） ==================== -->
+
+    <dimen name="car_text_logo">60sp</dimen>        <!-- 台标回落的「台名首字」字标 -->
+    <dimen name="car_text_station">34sp</dimen>     <!-- 播放卡大台名 -->
+    <dimen name="car_text_live">14sp</dimen>        <!-- 直播标记 -->
+    <dimen name="car_text_period">16sp</dimen>      <!-- 时段 00:00–24:00 -->
+    <dimen name="car_text_subtitle">15sp</dimen>    <!-- 副标题 -->
+    <dimen name="car_text_timeline">13sp</dimen>    <!-- 时间轴 00:00:00 / 此刻 -->
+    <dimen name="car_text_status">14sp</dimen>      <!-- 播放状态 -->
+    <dimen name="car_text_hint">12sp</dimen>        <!-- 顶栏媒体提示 -->
+    <dimen name="car_text_version">9.75sp</dimen>   <!-- 版本号徽标 -->
+    <dimen name="car_text_toolbar">10.5sp</dimen>   <!-- 顶栏按钮（主题/隐藏/更新/诊断） -->
+    <dimen name="car_text_region">11.25sp</dimen>   <!-- 地区选择 -->
+    <dimen name="car_text_tab">14sp</dimen>         <!-- 全部 / 收藏 标签 -->
+    <dimen name="car_text_item_title">22sp</dimen>  <!-- 列表行台名 -->
+    <dimen name="car_text_item_sub">14sp</dimen>    <!-- 列表行副标题 -->
+    <dimen name="car_text_item_no">16sp</dimen>     <!-- 列表行封面首字 -->
+
+    <!-- ==================== 控件尺寸（dp） ==================== -->
+
+    <dimen name="car_logo_size">140dp</dimen>       <!-- 播放卡台标（圆角方） -->
+    <dimen name="car_dot_live">8dp</dimen>          <!-- 直播橙色圆点 -->
+    <dimen name="car_fav_btn_size">48dp</dimen>     <!-- 播放卡收藏键 -->
+    <dimen name="car_fav_icon_size">24dp</dimen>    <!-- 收藏键内心形图标 -->
+    <dimen name="car_btn_height">88dp</dimen>       <!-- 上一台/播放/下一台 按钮高 -->
+    <dimen name="car_btn_icon_size">30dp</dimen>    <!-- 控制键内图标 -->
+    <dimen name="car_toolbar_height">36dp</dimen>   <!-- 右栏顶栏高 -->
+    <dimen name="car_tab_height">39dp</dimen>       <!-- 全部/收藏 标签行高 -->
+    <dimen name="car_item_height">66dp</dimen>      <!-- 列表行高 -->
+    <dimen name="car_cover_size">30dp</dimen>       <!-- 列表行封面方块 -->
+    <dimen name="car_mark_width">3dp</dimen>        <!-- 正在播指示条宽 -->
+    <dimen name="car_mark_height">28dp</dimen>      <!-- 正在播指示条高 -->
+    <dimen name="car_progress_height">6dp</dimen>   <!-- 时间轴进度条高 -->
+    <dimen name="car_item_icon_size">48dp</dimen>   <!-- 列表行收藏/隐藏图标列宽 -->
+    <dimen name="car_region_max_width">150dp</dimen> <!-- 地区胶囊最大宽 -->
+
+    <!-- ==================== 间距（dp） ==================== -->
+
+    <dimen name="car_space_2">2dp</dimen>
+    <dimen name="car_space_3">3dp</dimen>
+    <dimen name="car_space_4">4dp</dimen>
+    <dimen name="car_space_6">6dp</dimen>
+    <dimen name="car_space_8">8dp</dimen>
+    <dimen name="car_space_10">10dp</dimen>
+    <dimen name="car_space_12">12dp</dimen>
+    <dimen name="car_space_14">14dp</dimen>
+    <dimen name="car_space_15">15dp</dimen>
+    <dimen name="car_space_16">16dp</dimen>
+    <dimen name="car_space_20">20dp</dimen>
+
+</resources>

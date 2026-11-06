@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  台标底座（v2.0 由圆改为圆角方形）。
+
+  为什么改：喜马拉雅、云听、小宇宙这类音频 App 的封面都是圆角矩形，
+  圆形会切掉方形台标的四角（央广网的台标多是带文字的方图，切角就切掉笔画）。
+  24dp 圆角对应 140dp 的方台标，比例约 17%，和主流封面一致。
+
+  底色纯白 + 1dp 发丝边：白底台标放上去不显边界，深色台标也有个边界。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/panel" />
+    <corners android:radius="24dp" />
+    <stroke android:width="1dp" android:color="@color/divider" />
+</shape>

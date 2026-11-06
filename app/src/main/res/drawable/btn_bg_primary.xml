@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  主播放键（车机）：橙底 + 24dp 圆角，白图标。
+
+  整块界面只有这一处大面积橙，配合「正在播」的橙色标记，
+  让人一眼知道"主操作在这里"。焦点态不再加白描边（在橙底上会像描了一圈白边），
+  改成压暗一档 + 浅橙描边。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_solid_pressed" />
+            <corners android:radius="24dp" />
+            <stroke android:width="2dp" android:color="@color/accent_ring" />
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_solid_pressed" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_solid" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

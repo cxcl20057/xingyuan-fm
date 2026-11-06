@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  地区胶囊（主操作）。v2.1 把顶栏按钮统一提到 48dp，
+  原来 time_chip 的 8dp 圆角用在这个高度上会变成方块，所以单独给一枚
+  24dp 圆角的浅橙胶囊；time_chip 继续留给「时段」那种小标签。
+  焦点态是白底 + 2dp 亮橙描边，夜间同样可辨。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/panel" />
+            <corners android:radius="24dp" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_pressed" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_wash" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

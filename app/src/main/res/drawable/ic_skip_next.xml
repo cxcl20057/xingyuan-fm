@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  下一台（向右三角 + 竖线），与 ic_skip_previous 左右镜像。
+  颜色理由见 ic_skip_previous 的说明：浅灰底上必须是深灰。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="@color/icon_secondary"
+        android:pathData="M15.8,6h2.2v12h-2.2zM6,6l8.6,6L6,18z" />
+</vector>

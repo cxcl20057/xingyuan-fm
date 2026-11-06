@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  列表项（未选中）：透明底 + 12dp 圆角。
+
+  透明是刻意的：白卡片内的行靠间距分隔，不画格子、不铺浅灰条 ——
+  喜马拉雅的列表就是一整片白，只有"正在播"那一行才有底色。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/panel" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_muted" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/item_bg" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</selector>

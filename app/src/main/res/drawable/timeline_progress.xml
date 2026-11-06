@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  节目时间轴：浅灰轨道 + 橙色进度，3dp 圆角。
+
+  这是界面里第二处「刻度」语言（第一处是台标），配合左侧那道橙色竖条，
+  构成这台收音机的签名细节：一条调频刻度。
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/divider" />
+            <corners android:radius="3dp" />
+        </shape>
+    </item>
+
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="@color/accent" />
+                <corners android:radius="3dp" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

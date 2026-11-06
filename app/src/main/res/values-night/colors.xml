@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  夜间色板（v2.1）—— 与 values/colors.xml 同名、同角色、只换值
+  ============================================================
+
+  <h3>不是把白天反相</h3>
+  按 UI/UX Pro Max 的 color-dark-mode 规则，暗色用「去饱和 + 提亮 tonal」
+  而不是简单反转：页面底近黑 #0D1015，卡片 #191D24 比底亮一档，
+  次级面 #232935 再亮一档，三层靠明度递进，不靠描边和阴影。
+
+  <h3>对比度（已逐对核算，见 docs/界面改版-v2.1.md）</h3>
+    主文字 #F2F4F8 / 卡片 #191D24  = 15.35:1
+    次文字 #AEB6C4 / 卡片          =  8.28:1
+    三级   #8A93A1 / 卡片          =  5.9:1
+    强调字 #FFB27A / 深橙底 #3A2512 =  8.19:1
+    白图标 #FFFFFF / 橙底 #C2520C  =  4.66:1
+  白天那套也不放宽：亮橙底上放白字是 2.94:1，所以两套都用 accent_solid
+  深橙承载白字，亮橙只画圆点 / 进度 / 描边。
+
+  <h3>为什么没有纯黑</h3>
+  车机是 LCD 不是 OLED，纯黑底配亮白字会有光晕，长时间看更累；
+  #0D1015 带一点冷蓝，和橙色强调形成温和的冷暖对比。
+-->
+<resources>
+
+    <!-- ===== 底面 ===== -->
+    <color name="bg">#0D1015</color>
+    <color name="panel">#191D24</color>
+    <color name="surface_muted">#232935</color>
+    <color name="surface_pressed">#333B49</color>
+    <color name="divider">#333A46</color>
+
+    <!-- ===== 强调 ===== -->
+    <color name="accent">#FF8A3D</color>
+    <color name="accent_pressed">#E2701F</color>
+    <color name="accent_solid">#C2520C</color>
+    <color name="accent_solid_pressed">#9E4209</color>
+    <color name="accent_ring">#FFD2A8</color>
+    <color name="accent_wash">#3A2512</color>
+    <color name="accent_deep">#FFB27A</color>
+
+    <!-- ===== 文字 ===== -->
+    <color name="text_primary">#F2F4F8</color>
+    <color name="text_secondary">#AEB6C4</color>
+    <color name="text_hint">#8A93A1</color>
+
+    <!-- ===== 列表 ===== -->
+    <color name="item_text">#F2F4F8</color>
+    <color name="item_sub_text">#AEB6C4</color>
+    <color name="item_bg">#00000000</color>
+    <color name="item_bg_selected">#3A2512</color>
+    <color name="cover_bg">#232935</color>
+    <color name="cover_text">#AEB6C4</color>
+
+    <!-- ===== 图标 ===== -->
+    <color name="icon_secondary">#C7CEDB</color>
+    <color name="icon_on_accent">#FFFFFF</color>
+
+    <!-- 台标字标（暗底上） -->
+    <color name="on_light">#F2F4F8</color>
+
+    <!-- ===== 诊断日志（暗底上要提亮，否则看不见） ===== -->
+    <color name="log_key">#7CB8FF</color>
+    <color name="log_warn">#E8B84B</color>
+    <color name="log_error">#FF8A82</color>
+    <color name="log_info">#AEB6C4</color>
+
+</resources>

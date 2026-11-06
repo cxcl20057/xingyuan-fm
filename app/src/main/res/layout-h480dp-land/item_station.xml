@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  车机列表项（v2.0，尺寸走 @dimen/car_*）。
+
+  <h3>字号为什么相对收敛</h3>
+  「四川交通广播（FM101.7）」这类台名最长约 15 个字符宽。右栏列表可用宽有限，
+  扣掉指示条、封面、两个图标后剩得更少，字号再大就会截断。
+  封面方块 + 图标列收到位之后刚好放得下，不必再靠省略号遮丑。
+
+  <h3>三列对齐</h3>
+    指示条 | 封面 | 台名（弹性）| 收藏 | 隐藏
+  封面左边界成一列，台名左边界成一列，两个图标各自一列。
+
+  <h3>「正在播」的表达</h3>
+  浅橙底 + 左侧橙色指示条（id=item_mark）。指示条是<b>独立 View</b> 而不是
+  layer-list 里的左对齐细线 —— 后者要 API 23 的 android:width/gravity，
+  本项目 minSdk 21。显隐由 MainActivity 按选中态切换，用 INVISIBLE 不用 GONE，
+  否则行首会被"顶"出去，切换台时整列文字抖一下。
+
+  <h3>隐藏改图标</h3>
+  上一版用字符「⊘」，要靠设备字体提供 glyph，且字符基线导致上下不居中。
+  改成矢量图标（ic_hide），任何机器上大小与位置一致。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/car_item_height"
+    android:background="@drawable/item_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/car_space_12"
+    android:paddingEnd="@dimen/car_space_8">
+
+    <!-- 正在播的橙色指针（调频刻度的语言） -->
+    <View
+        android:id="@+id/item_mark"
+        android:layout_width="@dimen/car_mark_width"
+        android:layout_height="@dimen/car_mark_height"
+        android:background="@drawable/item_mark"
+        android:visibility="invisible" />
+
+    <!--
+      v2.2：封面方块优先显示真实台标图（item_logo），无图/未下载完回落到
+      「台名首字」（item_no）。封面方块 + 边距，和旧版序号列等宽，
+      台名可用宽度不变。
+      item_logo 用 clipToOutline 裁成 cover_chip 的圆角；首字背景仍由
+      MainActivity 按选中态在 cover_chip / cover_chip_selected 间切换。
+    -->
+    <FrameLayout
+        android:id="@+id/item_cover"
+        android:layout_width="@dimen/car_cover_size"
+        android:layout_height="@dimen/car_cover_size"
+        android:layout_marginStart="@dimen/car_space_6"
+        android:layout_marginEnd="@dimen/car_space_10">
+
+        <TextView
+            android:id="@+id/item_no"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/cover_chip"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="川"
+            android:textColor="@color/cover_text"
+            android:textSize="@dimen/car_text_item_no" />
+
+        <ImageView
+            android:id="@+id/item_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/cover_chip"
+            android:clipToOutline="true"
+            android:contentDescription="电台台标"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/item_text"
+            android:textSize="@dimen/car_text_item_title" />
+
+        <TextView
+            android:id="@+id/item_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/car_space_3"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/item_sub_text"
+            android:textSize="@dimen/car_text_item_sub" />
+    </LinearLayout>
+
+    <!-- 收藏（与播放卡、手机播放条同一对心形图，换图在 FavIcon.bind） -->
+    <ImageView
+        android:id="@+id/item_star"
+        android:layout_width="@dimen/car_item_icon_size"
+        android:layout_height="match_parent"
+        android:contentDescription="收藏"
+        android:padding="@dimen/car_space_14"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_favorite_border"
+        android:tint="@color/fav_icon_tint" />
+
+    <!-- 隐藏：点一下从列表移除（可在右上「隐藏」里恢复） -->
+    <ImageView
+        android:id="@+id/item_hide"
+        android:layout_width="@dimen/car_item_icon_size"
+        android:layout_height="match_parent"
+        android:contentDescription="从列表隐藏"
+        android:padding="@dimen/car_space_15"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_hide"
+        android:tint="@color/text_hint" />
+</LinearLayout>

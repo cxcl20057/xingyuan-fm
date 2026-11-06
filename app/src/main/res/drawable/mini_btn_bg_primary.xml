@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  手机主播放键：橙色正圆 + 白色图标。
+
+  手机上没有焦点导航，只用 pressed 与默认两态；保留 focused 分支是为了
+  外接键盘 / 无障碍聚焦时不至于完全没反馈。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_solid_pressed" />
+        </shape>
+    </item>
+
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_solid" />
+            <stroke android:width="3dp" android:color="@color/accent_ring" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_solid" />
+        </shape>
+    </item>
+</selector>

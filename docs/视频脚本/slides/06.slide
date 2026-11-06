@@ -1,0 +1,22 @@
+<Slide style={{ padding: 60, background: '#FFFFFF' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1F2937' }}>镜头 5 · 片尾</Text>
+    <Box style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 14, paddingRight: 14, background: '#FFF3EA', borderRadius: 20 }}>
+      <Text style={{ fontSize: 16, color: '#FF6600', fontWeight: 'bold' }}>24 – 30 秒</Text>
+    </Box>
+  </Box>
+  <Box style={{ height: 1, background: '#E5E7EB', marginTop: 16, marginBottom: 40 }} />
+  <Box style={{ flexDirection: 'row', gap: 48, alignItems: 'center' }}>
+    <Box style={{ width: 560, height: 400, background: '#1F2937', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.4, textAlign: 'center' }}>让广播回到<br />它本来的样子</Text>
+    </Box>
+    <Box style={{ flex: 1, flexDirection: 'column', gap: 18 }}>
+      <Text style={{ fontSize: 20, color: '#6B7280' }}>画面</Text>
+      <Text style={{ fontSize: 24, color: '#1F2937', lineHeight: 1.5 }}>品牌橙底，居中名称与开源引导</Text>
+      <Text style={{ fontSize: 20, color: '#6B7280', marginTop: 10 }}>旁白 / 字幕</Text>
+      <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#FF6600', lineHeight: 1.45 }}>「星愿收音机，让广播回到它本来的样子」</Text>
+      <Text style={{ fontSize: 20, color: '#6B7280', marginTop: 10 }}>转场</Text>
+      <Text style={{ fontSize: 24, color: '#1F2937' }}>淡出</Text>
+    </Box>
+  </Box>
+</Slide>

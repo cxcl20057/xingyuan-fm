@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  顶栏小胶囊（地区 / 更新 / 诊断 / 隐藏 / 版本号）。
+
+  浅灰底、无极描边，和白色卡片形成「更浅一层」的层次。
+  焦点态改成白底 + 2dp 橙描边：方向盘扫过来时能立刻看到落点。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/panel" />
+            <corners android:radius="24dp" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_pressed" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_muted" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

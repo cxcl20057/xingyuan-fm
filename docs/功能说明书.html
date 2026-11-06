@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>星愿收音机 v1.5.1 · 功能说明书</title>
+<style>
+  :root{
+    --bg:#0E1013; --panel:#15181D; --card:#1A1E24; --line:#262C34;
+    --accent:#FF7A18; --accent-soft:rgba(255,122,24,.12);
+    --t1:#FFFFFF; --t2:#9BA3AF; --t3:#6B7480; --code:#C8CFD8;
+    --ok:#3FB950; --warn:#FFB74D; --err:#FF6B6B; --info:#4FC3F7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--t2);font-size:15px;line-height:1.75;
+    font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{display:flex;max-width:1400px;margin:0 auto;gap:28px;padding:0 24px}
+
+  /* ---------- 侧边目录 ---------- */
+  nav{
+    width:210px;flex:none;position:sticky;top:0;height:100vh;overflow-y:auto;
+    padding:28px 0 40px;border-right:1px solid var(--line);
+  }
+  nav .brand{display:flex;align-items:center;gap:9px;margin-bottom:18px}
+  nav .dot{
+    width:26px;height:26px;border-radius:50%;background:var(--accent);flex:none;
+    display:flex;align-items:center;justify-content:center;
+    color:#0E1013;font-weight:800;font-size:14px;
+  }
+  nav .brand b{color:var(--t1);font-size:14px;letter-spacing:.02em}
+  nav .ver{font-size:11px;color:var(--t3);padding-left:35px;margin-top:-14px;margin-bottom:20px}
+  nav a{
+    display:block;color:var(--t2);text-decoration:none;font-size:13.5px;
+    padding:6px 10px;border-radius:6px;border-left:2px solid transparent;
+    transition:.15s;
+  }
+  nav a:hover{color:var(--t1);background:#191D23}
+  nav a.on{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+  nav a.sub{padding-left:22px;font-size:12.5px;color:var(--t3)}
+
+  /* ---------- 主体 ---------- */
+  main{flex:1;min-width:0;padding:28px 0 100px}
+
+  header.hero{
+    border-radius:14px;padding:30px 32px;margin-bottom:34px;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,#191E25 0%,#14181D 60%,#1B1611 100%);
+    border:1px solid var(--line);
+  }
+  header.hero::after{
+    content:"FM";position:absolute;right:-6px;bottom:-38px;font-size:150px;font-weight:900;
+    color:rgba(255,122,24,.055);letter-spacing:-.05em;pointer-events:none;
+  }
+  header.hero h1{color:var(--t1);font-size:29px;line-height:1.3;letter-spacing:-.01em}
+  header.hero h1 span{color:var(--accent)}
+  header.hero p{margin-top:10px;font-size:14px;max-width:660px}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .pill{
+    font-size:12px;padding:4px 11px;border-radius:99px;background:#20262E;
+    color:var(--t2);border:1px solid #2C333C;
+  }
+  .pill.hot{background:var(--accent-soft);color:var(--accent);border-color:rgba(255,122,24,.35)}
+
+  h2{
+    color:var(--t1);font-size:21px;margin:44px 0 8px;padding-top:14px;
+    display:flex;align-items:center;gap:10px;scroll-margin-top:20px;
+  }
+  h2 .n{
+    font-size:12px;font-weight:800;color:var(--bg);background:var(--accent);
+    width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  h3{color:var(--t1);font-size:16.5px;margin:26px 0 10px;scroll-margin-top:20px}
+  h4{color:var(--code);font-size:14px;margin:18px 0 6px;font-weight:700}
+  p{margin:9px 0}
+  .lead{color:var(--t2);font-size:14px;margin-bottom:14px}
+  strong{color:var(--t1);font-weight:700}
+  em{color:var(--accent);font-style:normal}
+  a{color:var(--info);text-decoration:none;border-bottom:1px dotted rgba(79,195,247,.4)}
+  a:hover{color:#8FD8FF}
+  code{
+    font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:12.5px;
+    background:#20262E;color:#E6C9A8;padding:1.5px 6px;border-radius:5px;
+    border:1px solid #2C333C;white-space:nowrap;
+  }
+  ul,ol{margin:8px 0 8px 20px}
+  li{margin:4px 0}
+  li::marker{color:var(--accent)}
+
+  /* ---------- 卡片 / 表格 ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:11px;
+    padding:16px 18px;margin:14px 0;
+  }
+  .card > b:first-child{display:block;color:var(--t1);font-size:14.5px;margin-bottom:6px}
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+
+  table{
+    width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;
+    background:var(--card);border-radius:10px;overflow:hidden;
+  }
+  th{
+    background:#1F252D;color:var(--t1);text-align:left;font-weight:700;
+    padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);
+  }
+  td{padding:9px 12px;border-bottom:1px solid #20262E;vertical-align:top}
+  /* 首列放「数据源/字段名」这类短标签，固定宽度，别被后面的长描述挤成一条竖线 */
+  td:first-child{width:1%;white-space:nowrap}
+  td.free{width:auto;white-space:normal}
+  /* 表格里的长域名/长路径：允许在点号后断行，但别逐字拆 */
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#1C2128}
+
+  /* ---------- 流程图（纯 CSS，不依赖图片） ---------- */
+  .flow{display:flex;flex-direction:column;gap:0;margin:16px 0}
+  .step{
+    display:flex;gap:14px;position:relative;padding-bottom:20px;
+  }
+  .step:last-child{padding-bottom:0}
+  .step .idx{
+    width:30px;height:30px;border-radius:50%;flex:none;
+    background:#20262E;border:1.5px solid #333A44;color:var(--t2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;font-weight:800;z-index:1;
+  }
+  .step:not(:last-child)::before{
+    content:"";position:absolute;left:14.5px;top:30px;bottom:0;width:1.5px;background:#2A313A;
+  }
+  .step .body{flex:1;min-width:0;padding-top:3px}
+  .step .body b{display:block;color:var(--t1);font-size:14.5px;margin-bottom:3px}
+  .step .body span{color:var(--t3);font-size:13px;display:block}
+  .step.hi .idx{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+
+  /* ---------- 结构树 ---------- */
+  .tree{
+    font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:12.5px;
+    background:#12161B;border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;line-height:2;color:var(--code);overflow-x:auto;
+  }
+  .tree .c1{color:var(--accent)}
+  .tree .c2{color:var(--t3)}
+
+  /* ---------- 状态徽章 ---------- */
+  .tag{font-size:11.5px;padding:2px 8px;border-radius:5px;font-weight:700;white-space:nowrap}
+  .t-ok{background:rgba(63,185,80,.14);color:var(--ok)}
+  .t-warn{background:rgba(255,183,77,.14);color:var(--warn)}
+  .t-info{background:rgba(79,195,247,.14);color:var(--info)}
+  .t-err{background:rgba(255,107,107,.14);color:var(--err)}
+
+  /* ---------- 提示块 ---------- */
+  .note{
+    border-left:3px solid var(--accent);background:var(--accent-soft);
+    border-radius:0 8px 8px 0;padding:11px 15px;margin:14px 0;font-size:13.5px;
+  }
+  .note b{color:var(--accent)}
+  .note.gray{border-left-color:#3A424D;background:#191D23}
+  .note.gray b{color:var(--t1)}
+
+  /* ---------- 代码块 ---------- */
+  pre{
+    background:#12161B;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow-x:auto;margin:12px 0;
+    font-family:"JetBrains Mono","SF Mono",Consolas,monospace;
+    font-size:12.5px;line-height:1.7;color:var(--code);
+    white-space:pre-wrap;word-break:break-word;tab-size:2;
+  }
+  pre .k{color:#FF9E64}   /* keyword */
+  pre .s{color:#9ECE6A}   /* string  */
+  pre .c{color:#5F6875}   /* comment */
+  pre .f{color:#7DCFFF}   /* func    */
+
+  /* ---------- 图片 ---------- */
+  figure{margin:16px 0}
+  figure img{
+    width:100%;border-radius:10px;border:1px solid var(--line);display:block;
+  }
+  figcaption{font-size:12.5px;color:var(--t3);margin-top:8px;text-align:center}
+
+  hr{border:0;border-top:1px solid var(--line);margin:36px 0}
+
+  /* ---------- 手机 ---------- */
+  @media (max-width:900px){
+    .wrap{display:block;padding:0 16px}
+    nav{
+      position:static;width:auto;height:auto;border-right:0;
+      border-bottom:1px solid var(--line);padding:18px 0 12px;
+      display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+    }
+    nav .brand{width:100%;margin-bottom:6px}
+    nav .ver{width:100%;margin:0 0 8px}
+    nav a{font-size:12.5px;padding:5px 9px;border-left:0;border:1px solid var(--line)}
+    nav a.sub{display:none}
+    main{padding:20px 0 80px}
+    header.hero{padding:22px 20px}
+    header.hero h1{font-size:22px}
+    h2{font-size:18.5px;margin-top:34px}
+    table{font-size:12.5px;table-layout:auto}
+    th,td{padding:7px 8px}
+    /* 窄屏上任何「固定列宽 / 不换行」都会撑破容器，全部交给浏览器分配 */
+    th[style],td,td:first-child,td.free{width:auto!important;white-space:normal!important}
+    th{white-space:normal}
+    td code{white-space:normal;word-break:break-all}
+    pre,.tree{font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <div class="brand"><span class="dot">星</span><b>星愿收音机</b></div>
+  <div class="ver">功能说明书 · v1.5.1</div>
+  <a href="#abstract" class="on">摘要</a>
+  <a href="#what">一、这是什么</a>
+  <a href="#boot">二、启动流程</a>
+  <a href="#data">三、数据从哪来</a>
+  <a href="#play">四、怎么播</a>
+  <a href="#resume">五、记忆与恢复</a>
+  <a href="#ui">六、界面与操作</a>
+  <a href="#phone">七、手机适配</a>
+  <a href="#media">八、方向盘与媒体会话</a>
+  <a href="#arch">九、代码结构</a>
+  <a href="#edge">十、异常处理</a>
+  <a href="#test">十一、验证</a>
+  <a href="#limits">十二、边界与限制</a>
+</nav>
+
+<main>
+
+<header class="hero">
+  <h1>星愿收音机 <span>功能说明书</span></h1>
+  <p>面向吉利星愿车机（GEELYGEOME E22H / IHU801G，Android 9）自建的纯净网络收音机。
+     本文说明 <strong>它做什么</strong>、<strong>怎么做的</strong>、以及<strong>每个设计决定背后的原因</strong>。</p>
+  <div class="pillrow">
+    <span class="pill hot">v1.5.1</span>
+    <span class="pill">Android 9 / API 28</span>
+    <span class="pill">1920×1080 @2x</span>
+    <span class="pill">76 KB</span>
+    <span class="pill">零第三方运行时依赖</span>
+    <span class="pill">103 个单测</span>
+  </div>
+</header>
+
+<h2 id="abstract"><span class="n">§</span>摘要</h2>
+<p class="lead">一页看完：这个 App 到底在做什么。</p>
+
+<div class="grid g3">
+  <div class="card"><b>① 自动知道你在哪</b>用公网出口 IP 识别省份，自动生成当地电台列表。四川排第一，成都等城市台紧随其后。</div>
+  <div class="card"><b>② 实时取播放地址</b>从央广 <code>radio.cn</code> 公开接口取台列表与音频地址，地址带签名，本地持久缓存可复用。</div>
+  <div class="card"><b>③ 会话常驻不中断</b>播放器跑在前台服务里，界面关掉、切到导航，音频与方向盘按键都还在。</div>
+  <div class="card"><b>④ 记得你上次听到哪</b>记住「哪个省份 + 哪一台 + 是否在播 + 哪个标签页」，开机原样回到那里。</div>
+  <div class="card"><b>⑤ 车机手机同一份</b>同一个 APK：车机走两栏横屏，手机走单列竖屏，尺寸与手感分别调优。</div>
+  <div class="card"><b>⑥ 无广告无追踪</b>没有开屏、没有广告 SDK、没有埋点上报，只读公开接口。</div>
+</div>
+
+<h2 id="what"><span class="n">1</span>这是什么</h2>
+
+<h3>1.1 一句话定位</h3>
+<div class="note">
+  <b>它是什么：</b>一个只用 <strong>76 KB</strong> 的 Android 应用，把「央广网广播电台」变成一台装在车机上、能用方向盘按键控制的收音机。
+</div>
+<div class="note gray">
+  <b>它不是什么：</b>不是云听的破解版，不含云听/考拉FM 的任何代码、图标或私有接口；
+  不下载、不转存、不分发任何音频内容；不采集个人信息。
+</div>
+
+<h3>1.2 与「云听」的关系</h3>
+<table>
+  <thead><tr><th style="width:130px">对比项</th><th>云听（原车机自带）</th><th>星愿收音机（本程序）</th></tr></thead>
+  <tbody>
+    <tr><td>体积</td><td>30.7 MB（4 个 dex，Kotlin + ARouter + Glide + 定位 SDK）</td><td><strong>76 KB</strong>（纯 Java，无第三方库）</td></tr>
+    <tr><td>内容源</td><td>考拉FM + 央广云听（多个私有域名）</td><td>仅央广 <code>radio.cn</code> 网页端公开接口</td></tr>
+    <tr><td>广告</td><td>有（<code>assets/adsetting.txt</code> 广告位映射 + 埋点）</td><td><strong>无</strong>，代码里没有任何广告/统计组件</td></tr>
+    <tr><td>电台范围</td><td>全品类（音乐、有声书、播客…）</td><td>只做<strong>广播直播</strong>，34 个省级行政区 + 国家台</td></tr>
+    <tr><td>启动行为</td><td>开屏 + 首页推荐流</td><td>直接进播放界面，无任何中间页</td></tr>
+  </tbody>
+</table>
+<p>两者<strong>数据同源</strong>（云听的广播频道底层也走央广接口），但实现完全独立。</p>
+
+<h2 id="boot"><span class="n">2</span>启动流程</h2>
+<p class="lead">从点击图标到出声，中间发生了什么。整个流程<strong>不阻塞界面</strong>：界面先出来，数据后台加载。</p>
+
+<div class="flow">
+  <div class="step hi"><div class="idx">1</div><div class="body">
+    <b>唤醒播放服务（不等结果）</b>
+    <span>第一时间 <code>startForegroundService(RadioService)</code>，让 MediaSession 尽快存在——车机媒体中心只在开机时扫描一遍媒体源，晚到就不会被列出。</span>
+  </div></div>
+  <div class="step"><div class="idx">2</div><div class="body">
+    <b>读上次的记录</b>
+    <span>从 <code>PlayPrefs</code> 取出：省份、台名、contentId、下标、是否在播、是否「用户手选过省份」、停在哪个标签页。</span>
+  </div></div>
+  <div class="step"><div class="idx">3</div><div class="body">
+    <b>绑定已存在的播放器</b>
+    <span>服务可能比界面早 200ms 起来，所以短轮询等待（最多 8 秒）拿到 <code>RadioPlayer</code> 实例，挂上监听。拿到的如果是「已经在放」的播放器，绝不打断。</span>
+  </div></div>
+  <div class="step"><div class="idx">4</div><div class="body">
+    <b>判定版面</b>
+    <span>按屏幕 dp 尺寸决定用两栏（车机）还是单列（手机），并调整台标直径、列表行高、滑动阈值。</span>
+  </div></div>
+  <div class="step hi"><div class="idx">5</div><div class="body">
+    <b>后台解析地区</b>
+    <span>子线程：<strong>IP 定位</strong> → 若失败用默认「四川」。同时拉一次省份列表。两者完成后回到主线程。</span>
+  </div></div>
+  <div class="step"><div class="idx">6</div><div class="body">
+    <b>决定打开哪个「文件夹」</b>
+    <span>用户以前<strong>手动选过</strong>省份 → 强制恢复那个省；否则跟随定位结果。<span>这一步是「开机回到上次文件夹」的关键，判断见第五节。</span></span>
+  </div></div>
+  <div class="step"><div class="idx">7</div><div class="body">
+    <b>拉该省电台列表</b>
+    <span>请求成功 → 过滤掉隐藏台 → 按「省级台 → 城市台 → 其它」三档排序 → 所有台的地址落到本地缓存。</span>
+  </div></div>
+  <div class="step"><div class="idx">8</div><div class="body">
+    <b>决定起播哪一台（三级优先）</b>
+    <span>① 服务里正在播的台（不打断）→ ② 上次记的 contentId → ③ 列表第一个。</span>
+  </div></div>
+  <div class="step hi"><div class="idx">9</div><div class="body">
+    <b>出声 + 列表定位</b>
+    <span>优先用缓存地址秒开；同时按 contentId 找到对应行，高亮并在必要时滚动过去。</span>
+  </div></div>
+</div>
+
+<h2 id="data"><span class="n">3</span>数据从哪来</h2>
+
+<h3>3.1 三个数据源</h3>
+<table>
+  <thead><tr><th style="width:120px">数据</th><th style="width:180px">来源</th><th>用途与特点</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>电台与地址</strong></td>
+      <td>央广 <code>ytmsout.radio.cn</code><br><span class="tag t-info">公开接口</span></td>
+      <td>省份列表、某省电台列表、每台的 4 类播放地址（MP3 高/低码率、HLS、Multi）。地址带<strong>签名 key</strong>，随请求变化。</td>
+    </tr>
+    <tr>
+      <td><strong>所在地区</strong></td>
+      <td><code>ip-api.com</code><br>→ 备用 <code>myip.ipip.net</code></td>
+      <td>只取<strong>省级</strong>粒度 + 城市名（仅用于界面显示）。4 秒超时，失败就用默认四川。</td>
+    </tr>
+    <tr>
+      <td><strong>电台台标</strong></td>
+      <td>接口返回的 <code>image</code> 字段</td>
+      <td>央广官方台标图（通常 400×400）。下载后缓存到本地磁盘，断网也能显示。</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 接口签名（逆向得到的规则）</h3>
+<p>央广网页端的接口不是裸请求，每个请求都要带 <code>timestamp</code> 与 <code>sign</code>。规则来自 <code>www.radio.cn/pc-portal/js/api.js</code>：</p>
+<pre><span class="c">// 1. 参数按键名排序拼成 "k1=v1&k2=v2"</span>
+<span class="c">// 2. 尾部追加 "&timestamp=&lt;毫秒&gt;&key=&lt;前端常量&gt;"</span>
+<span class="c">// 3. MD5 后转大写成 sign，与 timestamp 一起放进请求头</span>
+
+sign = <span class="f">MD5</span>(<span class="s">"categoryId=0&provinceCode=510000"</span>
+            + <span class="s">"&timestamp="</span> + ts
+            + <span class="s">"&key=f0fc4c…"</span>).<span class="f">toUpperCase</span>()
+
+<span class="c">// 固定请求头</span>
+equipmentId: <span class="s">0000</span>    platformCode: <span class="s">WEB</span>    Content-Type: <span class="s">application/json</span></pre>
+<div class="note">
+  <b>局限说明：</b><code>KEY</code> 是网页前端里的公开常量，不是破解出来的密钥。若服务端轮换，需要同步更新一行常量。
+</div>
+
+<h3>3.3 播放地址为什么需要缓存</h3>
+<p>接口返回的地址长这样：</p>
+<pre>http://ytcastmp3.radio.cn<span class="s">/72/stream_10749.mp3</span>?type=1&key=<span class="k">a3f8…（32位十六进制）</span>&time=<span class="k">65f2…（十六进制签发时刻）</span></pre>
+<p>实测得出三个关键结论：</p>
+<table>
+  <thead><tr><th style="width:230px">实验</th><th>结果</th><th>推论</th></tr></thead>
+  <tbody>
+    <tr><td>同一秒内连续请求多次</td><td>key 完全不变</td><td>key 由「时间片」派生，不是一次性随机串</td></tr>
+    <tr><td>把 <code>time</code> 改 1 秒</td><td>立刻 <span class="tag t-err">403</span></td><td>服务端严格校验 key / path / time 三元组</td></tr>
+    <tr><td>原样保存的地址放置 32 分钟</td><td><span class="tag t-ok">HTTP 200/206</span> 仍可拉流</td><td><strong>不能长期写死，但可以持久缓存复用</strong></td></tr>
+  </tbody>
+</table>
+<p>所以 <code>StreamCache</code> 采用两级时效：</p>
+<ul>
+  <li><strong>30 分钟内</strong>视为新鲜，直接用缓存地址秒开，不等网络；</li>
+  <li><strong>6 小时以上</strong>判废，连试都不试，省掉一次超时等待；</li>
+  <li>两者之间：先试缓存，失败自动刷新当前台（<strong>只刷这一个台</strong>，不整批重来）。</li>
+</ul>
+
+<h3>3.4 列表排序规则</h3>
+<p>四川人优先，是刻意的排序策略：</p>
+<table>
+  <thead><tr><th style="width:70px">档位</th><th>判定条件</th><th>例子</th></tr></thead>
+  <tbody>
+    <tr><td><strong>一档</strong></td><td>台名以省名开头，且不含城市名</td><td>四川交通广播、四川新闻广播</td></tr>
+    <tr><td><strong>二档</strong></td><td>台名含省名或城市名（排除国家级）</td><td>中国交通广播（四川）、成都经济广播</td></tr>
+    <tr><td><strong>三档</strong></td><td>其余</td><td>国家台、其它</td></tr>
+  </tbody>
+</table>
+<p>省份下拉框同样排序：<strong>四川 → 重庆 → 云南 → 贵州 → 其它</strong>。</p>
+
+<h2 id="play"><span class="n">4</span>怎么播</h2>
+
+<h3>4.1 播放内核</h3>
+<p>用系统 <code>MediaPlayer</code>（不引第三方播放器），关键设置：</p>
+<ul>
+  <li><strong>音频用途标为 MEDIA</strong>：<code>USAGE_MEDIA</code> + <code>CONTENT_TYPE_MUSIC</code>，让车机把它当媒体流而不是通知音；</li>
+  <li><strong>主动申请音频焦点</strong>：来电/导航播报时自动压低或暂停，结束后恢复；</li>
+  <li><strong>持有 WakeLock</strong>：后台播放不因熄屏被断；</li>
+  <li><strong>持续上报 PlaybackState</strong>：position 用单调时钟推进，车机进度条才不会卡在 0。</li>
+</ul>
+
+<h3>4.2 一个台打不开时的降级链</h3>
+<div class="flow">
+  <div class="step hi"><div class="idx">1</div><div class="body"><b>缓存地址</b><span>30 分钟内直接信任，秒开。</span></div></div>
+  <div class="step"><div class="idx">2</div><div class="body"><b>列表内候选地址</b><span>按 MP3 直连优先、HLS 其次的顺序依次尝试（直连解码负担最低）。</span></div></div>
+  <div class="step"><div class="idx">3</div><div class="body"><b>单台刷新</b><span>向接口重新申请这一台的地址，写回缓存再试。</span></div></div>
+  <div class="step"><div class="idx">4</div><div class="body"><b>放弃并提示</b><span>状态栏显示错误原因，日志留下详情，不静默失败。</span></div></div>
+</div>
+
+<h3>4.3 上下切台的语义</h3>
+<div class="note">
+  切台走的是 <strong>「播放队列」</strong>，不是屏幕上的列表。队列 = 当前省份（或收藏）里<strong>所有未被隐藏</strong>的台。
+  这样保证：方向盘永远不会切到你藏起来的台（否则会像「卡住」）。
+  队列首尾<strong>循环</strong>：最后台再按下一台回到第一台。
+</div>
+
+<h2 id="resume"><span class="n">5</span>记忆与恢复</h2>
+
+<h3>5.1 记了什么</h3>
+<table>
+  <thead><tr><th style="width:170px">字段</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>contentId</code></td><td>电台稳定 ID，<strong>主要依据</strong>（列表增删也不会错位）</td></tr>
+    <tr><td><code>index</code></td><td>下标，<strong>兜底</strong>（万一该台被下架）</td></tr>
+    <tr><td><code>provinceCode / Name</code></td><td>上次在哪个「文件夹」</td></tr>
+    <tr><td><code>playing</code></td><td>退出时是否在播</td></tr>
+    <tr><td><code>chosenByUser</code></td><td><strong>省份是手选的，还是定位推出来的</strong></td></tr>
+    <tr><td><code>showingFavorites</code></td><td>停在「全部电台」还是「★ 收藏」</td></tr>
+  </tbody>
+</table>
+<div class="note gray">
+  <b>刻意不存播放地址。</b>地址带一次性签名，存下来必然失效，反而会让下次启动「先失败再刷新」变慢。
+</div>
+
+<h3>5.2 为什么要区分「手选」和「定位」</h3>
+<p>这是个容易踩的坑：如果一律用「上次的省份」恢复，那么<strong>车开到别的省也不会自动切换</strong>；
+如果一律用定位，那么<strong>你手动切到「国家台」下次就丢了</strong>。</p>
+<p>解法是只认「用户意图」：</p>
+<div class="grid g2">
+  <div class="card"><b>你手动选过省份</b>标记 <code>chosenByUser = true</code>，启动时<strong>强制回到那个省</strong>，不管你人在哪。</div>
+  <div class="card"><b>你从没选过</b>启动时<strong>跟随定位</strong>，换个地方自动换当地台。</div>
+</div>
+
+<h3>5.3 「文件夹 + 电台」必须成对恢复</h3>
+<p>省份和电台是两个值，必须一起恢复。只恢复一个会出现这种错位：<strong>记的是 A 省的台，列表却是 B 省</strong>——用户看到的和上次不是一回事，等于没恢复。</p>
+<p>另外有个隐藏 bug 已经修掉：列表请求如果被发两遍，第二遍重建队列时「恢复标记」已经被消费掉，会从下标 0 起播、还把「第 0 台」写回偏好，导致<strong>次次都跳回第一个台</strong>。现在做了请求去重，恢复标记也只消费一次。</p>
+
+<h2 id="ui"><span class="n">6</span>界面与操作</h2>
+
+<figure>
+  <img src="car-preview.png" alt="车机界面">
+  <figcaption>车机版：左 46% 控制区（台标 / 台名 / 直播态 / 节目时间轴 / 三个大按钮），右 54% 电台列表</figcaption>
+</figure>
+
+<h3>6.1 左侧播放区</h3>
+<table>
+  <thead><tr><th style="width:150px">元素</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><strong>圆形台标</strong></td><td>央广官方台标图。方形标裁成圆铺满；<strong>横向长条标</strong>（如 101.7 FM 组合标）完整显示不切两端。无网无缓存时回落成「台名首字」字标，永不空白。</td></tr>
+    <tr><td><strong>台名</strong></td><td>40sp 粗体，最多两行。</td></tr>
+    <tr><td><strong>直播状态</strong></td><td>「● 正在直播」橙色 /「❚❚ 已暂停」灰色。</td></tr>
+    <tr><td><strong>节目时间轴</strong></td><td>直播没有真实进度，所以用「今天 0 点到现在」的位置表示时间走到哪，配实时时间码。</td></tr>
+    <tr><td><strong>三个按钮</strong></td><td>上一台 / 暂停 / 下一台，高 92dp（车机）或 76dp（手机）。<strong>单击即生效</strong>。</td></tr>
+  </tbody>
+</table>
+
+<h3>6.2 右侧列表</h3>
+<ul>
+  <li><strong>「全部电台 / ★ 收藏」标签切换</strong>：一眼看到当前在哪个视图，直接点，不用先展开菜单；</li>
+  <li><strong>每行右侧两个独立按钮</strong>：<code>★</code> 收藏、<code>⊘</code> 隐藏，与「点行切台」互不干扰；</li>
+  <li><strong>当前台自动高亮并跟随</strong>：切台时列表只在目标行看不见时才滚动，并留 1~3 行余量，不把当前台贴在屏幕边缘。</li>
+</ul>
+
+<h3>6.3 三种操作方式</h3>
+<table>
+  <thead><tr><th style="width:150px">方式</th><th>操作</th><th>适用</th></tr></thead>
+  <tbody>
+    <tr><td><strong>点按钮</strong></td><td>点上一台 / 暂停 / 下一台</td><td>最直接，触屏一点即生效</td></tr>
+    <tr><td><strong>滑动</strong></td><td>播放区<strong>上滑或左滑</strong> = 下一台<br><strong>下滑或右滑</strong> = 上一台</td><td>开车时不用瞄准按钮。只在上半区生效，不抢按钮点击和列表滚动。</td></tr>
+    <tr><td><strong>方向盘</strong></td><td>上一曲 / 下一曲 / 播放暂停</td><td>手不离方向盘（需车机把本应用识别为媒体源）</td></tr>
+  </tbody>
+</table>
+
+<h3>6.4 隐藏 ≠ 取消收藏</h3>
+<div class="note">
+  <b>两个完全独立的用户意图，分开存储、互不影响：</b>
+  <ul style="margin-bottom:0">
+    <li><strong>收藏（★）</strong>：我想常听，进「收藏」标签。</li>
+    <li><strong>隐藏（⊘）</strong>：我不想看见，从列表里拿掉，可在「隐藏管理」恢复或一键全部恢复。</li>
+  </ul>
+</div>
+<p>隐藏会<strong>同步移出播放队列</strong>——否则方向盘会切到你看不见的台，像「卡住」了。若所有台都被隐藏，兜底保留原列表，不会白屏。</p>
+
+<h2 id="phone"><span class="n">7</span>手机适配</h2>
+
+<figure>
+  <img src="phone-preview.png" alt="手机界面" style="max-width:330px;margin:0 auto">
+  <figcaption>手机版：单列纵向，播放卡在上、列表在下</figcaption>
+</figure>
+
+<h3>7.1 为什么不做「一套布局自适应」</h3>
+<p>车机是 960×540dp 的宽扁屏，适合两栏；手机竖屏只有 360dp 宽，两栏会把 28sp 的台名压成两三个字。<strong>硬套自适应只会两边都不好用</strong>，所以直接换布局文件。</p>
+
+<table>
+  <thead><tr><th style="width:230px">屏幕</th><th style="width:110px">版面</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>车机 960×540dp</td><td>两栏</td><td>与原车机版完全一致</td></tr>
+    <tr><td>手机竖屏 360~430dp</td><td>单列</td><td>台名 30sp、台标 119~142dp、行高 62dp</td></tr>
+    <tr><td>手机横屏 780×360dp</td><td><strong>单列</strong></td><td>宽扁但高度只有 360dp，两栏塞不下（左栏内容约需 480dp）</td></tr>
+    <tr><td>Carlink 小窗 800×450dp</td><td><strong>单列</strong></td><td>v1.9.4 起按窗口高度判定，小窗高度 450dp &lt; 480dp</td></tr>
+    <tr><td>横屏大屏 ≥480dp 高</td><td>两栏</td><td>保持大字号（车机 960×540、投屏 1422×711）</td></tr>
+    <tr><td>竖屏平板 800×1280dp</td><td>单列</td><td>尺寸不收紧，按平板看</td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 判据为什么带「高度」</h3>
+<pre><span class="c">// 两栏能不能成立：既要宽扁，也要够高（与 layout-h480dp-land/ 逐字对应）</span>
+useTwoColumn(w, h) = w &gt;= h  &amp;&amp;  h &gt;= 480dp
+
+<span class="c">// 尺寸要不要收紧：不是两栏版面、也不是平板，就收紧</span>
+compactMetrics(w, h) = !useTwoColumn(w, h) <span class="c">// 手机竖屏/横屏、Carlink 小窗</span>
+                     &amp;&amp; min(w, h) &lt; 600dp</pre>
+<div class="note">
+  <b>这里有个陷阱：</b>车机短边也只有 540dp，如果只看短边就会被误判成「手机尺寸」，把车规大字号缩小。
+  所以判据里加了宽高比。手机横屏（比 2.17）虽然宽扁，但高度不够，仍然走单列 + 紧凑尺寸。
+</div>
+
+<h3>7.3 手机上额外做的</h3>
+<ul>
+  <li><strong>取消锁横屏</strong>：锁死横屏在手机上会强制转 90°，竖着拿没法用。车机固定面板本来就转不了，取消对车机零影响；</li>
+  <li><strong>锁屏 / 通知栏显示台标</strong>：手机锁屏媒体控件、通知栏大图、蓝牙车机都读 <code>METADATA_KEY_ART</code>，车机长期亮屏用不到，手机缺了就是灰方块；</li>
+  <li><strong>滑动手感调轻</strong>：阈值从车机的 90dp 降到 48dp（约屏宽 1/8），拇指轻扫即触发。</li>
+</ul>
+
+<h2 id="media"><span class="n">8</span>方向盘与媒体会话</h2>
+
+<h3>8.1 为什么必须「常驻」</h3>
+<p>最初的版本把 MediaSession 建在 Activity 里，结果一按返回键、一切到导航，会话就 <code>release</code> 了——车机左下角自然看不到「星愿收音机」，方向盘按键也没了目标。现在播放器由<strong>前台服务</strong>持有：</p>
+<div class="grid g2">
+  <div class="card"><b>会话常驻</b>服务活着 → 会话活着 → 车机媒体中心一直有这个媒体源。</div>
+  <div class="card"><b>开机即存在</b>随车机开机自启，赶在媒体中心扫描之前把会话建好。</div>
+</div>
+
+<h3>8.2 按键的三条到达路径</h3>
+<table>
+  <thead><tr><th style="width:190px">路径</th><th>说明</th><th style="width:90px">优先级</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MediaSession 回调</strong></td><td>标准路径，会话注册了 <code>PendingIntent</code> 指向按键接收器</td><td>主</td></tr>
+    <tr><td><strong>MEDIA_BUTTON 广播</strong></td><td>部分车机直接发广播，接收器兜底解析 keyCode</td><td>备</td></tr>
+    <tr><td><strong>通知栏控制</strong></td><td>通知带上一台/播放暂停/下一台三个动作</td><td>备</td></tr>
+  </tbody>
+</table>
+<p>按键到来时日志会打一行 <code>[按键] keyCode=… repeat=…</code>。若播放器未就绪，会先拉起服务、丢弃本次按键，下次即可正常工作。</p>
+<div class="note gray">
+  <b>如果方向盘没反应：</b>去车机设置里把「默认音乐 / 媒体应用」选成本应用——很多车机只在开机时扫描一次媒体源。
+</div>
+
+<h2 id="arch"><span class="n">9</span>代码结构</h2>
+<p>共 17 个 Java 类，约 3,800 行，<strong>零第三方运行时依赖</strong>。所有类都是包内可见，没有对外 API。</p>
+
+<div class="tree">
+<span class="c1">com.rea.radio</span>
+├─ <span class="c1">MainActivity</span>        1253行  界面、手势、列表、版面切换、诊断面板
+├─ <span class="c1">RadioPlayer</span>           632行  MediaPlayer 封装、MediaSession、音频焦点、地址重试
+├─ <span class="c1">RadioCnApi</span>            245行  央广接口客户端（签名 / HTTP / JSON 解析）
+├─ <span class="c1">LogoLoader</span>            270行  台标三级缓存（内存 LRU → 磁盘 → 网络）
+├─ <span class="c1">RadioService</span>           182行  前台服务，播放器与通知的宿主
+├─ <span class="c1">SwipeStationHelper</span>    172行  滑动换台识别（旁听模式，纯函数判定）
+├─ <span class="c1">FavoriteStore</span>          157行  收藏存储（按 contentId）
+├─ <span class="c1">PhoneLayout</span>            147行  手机/车机版面判定与尺寸计算（纯函数）
+├─ <span class="c1">HiddenStore</span>            125行  隐藏存储（与收藏独立）
+├─ <span class="c1">AppLog</span>                119行  300 条环形日志缓冲（诊断面板用）
+├─ <span class="c1">StreamCache</span>            111行  播放地址持久缓存（30 分钟新鲜 / 6 小时判废）
+├─ <span class="c1">RegionResolver</span>         110行  IP 归属地识别（双源 + 超时兜底）
+├─ <span class="c1">PlayPrefs</span>             108行  上次播放状态快照（含 chosenByUser 标记）
+├─ <span class="c1">MediaButtonReceiver</span>    79行  方向盘/蓝牙按键兜底接收器
+├─ <span class="c1">QueueRow</span>               59行  队列下标 ↔ 屏幕行号换算、滚动判定（纯函数）
+├─ <span class="c1">BootReceiver</span>           32行  开机自启（只起服务不出声）
+└─ <span class="c1">RadioPlayerHolder</span>      18行  进程级单例引用（供广播接收器访问）
+</div>
+
+<h3>9.1 分层</h3>
+<table>
+  <thead><tr><th style="width:130px">层</th><th>类</th><th>职责</th></tr></thead>
+  <tbody>
+    <tr><td><strong>界面层</strong></td><td>MainActivity、PhoneLayout、SwipeStationHelper、QueueRow</td><td>只负责显示与交互，不碰网络和播放细节</td></tr>
+    <tr><td><strong>播放层</strong></td><td>RadioService、RadioPlayer、StreamCache</td><td>流控制、媒体会话、地址缓存</td></tr>
+    <tr><td><strong>数据层</strong></td><td>RadioCnApi、RegionResolver、LogoLoader</td><td>网络请求与解析，全部在子线程</td></tr>
+    <tr><td><strong>存储层</strong></td><td>PlayPrefs、FavoriteStore、HiddenStore</td><td>三份独立 SharedPreferences，互不污染</td></tr>
+  </tbody>
+</table>
+
+<h3>9.2 两个刻意的设计</h3>
+<div class="card">
+  <b>把「判定逻辑」抽成纯函数</b>
+  <p style="margin:4px 0 0"><code>SwipeStationHelper.decide()</code>、<code>QueueRow.scrollTargetFor()</code>、<code>PhoneLayout.useTwoColumn()</code>
+  都是不依赖 Android 控件的静态方法——可以在 JVM 上直接单测，不需要真机或模拟器。这是这个项目能在没有 USB 调试的条件下还保持可维护的原因。</p>
+</div>
+<div class="card">
+  <b>触屏和方向盘共用一个焦点体系</b>
+  <p style="margin:4px 0 0">控件只设 <code>focusable="true"</code>，<strong>绝不设</strong> <code>focusableInTouchMode="true"</code>。
+  后者会让触屏第一次点击只获取焦点、不触发 click，用户必须点两次——这个坑已经用源码级测试锁死。</p>
+</div>
+
+<h2 id="edge"><span class="n">10</span>异常处理</h2>
+<table>
+  <thead><tr><th style="width:210px">情况</th><th>行为</th></tr></thead>
+  <tbody>
+    <tr><td>IP 定位失败 / 超时</td><td>回落默认「四川」，不弹错误框打断使用</td></tr>
+    <tr><td>省份列表接口挂掉</td><td>用内置兜底列表（四川 + 国家）</td></tr>
+    <tr><td>电台列表为空</td><td>状态栏提示，列表保持空，不崩溃</td></tr>
+    <tr><td>播放地址 403 / 过期</td><td>单台刷新地址 → 重试；仍失败则提示并记录日志</td></tr>
+    <tr><td>断网</td><td>已缓存的地址可继续；台标回落字标；界面不空白</td></tr>
+    <tr><td>台标图下载失败</td><td>回落「台名首字」圆形字标</td></tr>
+    <tr><td>服务被系统回收</td><td><code>START_STICKY</code> 自动重建；按键接收器也会主动拉起</td></tr>
+    <tr><td>所有台被隐藏</td><td>兜底保留原列表，避免白屏无台可选</td></tr>
+    <tr><td>收藏视图为空</td><td>列表区显示引导文案「点列表右侧的 ☆ 添加」</td></tr>
+    <tr><td>来电 / 导航播报</td><td>自动压低或暂停，结束后恢复</td></tr>
+  </tbody>
+</table>
+
+<h2 id="test"><span class="n">11</span>验证</h2>
+<p class="lead">没有 USB 调试条件，所以验证主要靠 JVM 上的 Robolectric 真实渲染 + 纯函数单测。</p>
+
+<table>
+  <thead><tr><th style="width:230px">验证项</th><th>方式</th><th style="width:80px">结果</th></tr></thead>
+  <tbody>
+    <tr><td class="free">接口签名算法</td><td>与网页 JS 逐位比对（带参 / 空参两例）</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">车机界面 1920×1080 渲染</td><td>Robolectric 真实 inflate + 测量 + 截图</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">手机 1080×2340 / 720×1280 渲染</td><td>同上，断言按钮与列表都在屏内</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">切台时列表跟随翻页</td><td>连按 12 次必须翻页；往回切要跟回来；隐藏后台后行号不错位</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">按钮单击即生效</td><td>源码级校验样式里没有 <code>focusableInTouchMode</code></td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">四川 44 个台可播</td><td><code>scripts/verify_streams.py</code> 实际拉流</td><td><span class="tag t-ok">44/44</span></td></tr>
+    <tr><td class="free">播放地址有效期</td><td>长测：32 分钟后仍可拉流</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">MediaSession 常驻</td><td>单测：界面销毁后播放器单例不变</td><td><span class="tag t-ok">通过</span></td></tr>
+    <tr><td class="free">方向盘按键真车</td><td>需在车上实际按（依赖车机是否把事件派发过来）</td><td><span class="tag t-warn">待确认</span></td></tr>
+  </tbody>
+</table>
+<p><strong>单测总计：103 个全部通过</strong>（<code>gradle testDebugUnitTest</code>）。</p>
+
+<h2 id="limits"><span class="n">12</span>边界与限制</h2>
+
+<h3>12.1 已知限制</h3>
+<table>
+  <thead><tr><th style="width:250px">限制</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>只用公开接口</td><td>央广没有官方 SDK 与 SLA，上游改版可能失效。用 <code>verify_streams.py</code> 可快速定位是接口变了还是网络问题。</td></tr>
+    <tr><td>签名 KEY 是前端常量</td><td>若服务端轮换需同步更新；不是破解出的密钥。</td></tr>
+    <tr><td>只支持广播直播</td><td>不支持点播、回听、有声书——定位就是「一台收音机」。</td></tr>
+    <tr><td>车机方向盘依赖系统</td><td>需车机把本应用识别为媒体源。App 侧已就绪，最终取决于车机设置。</td></tr>
+    <tr><td>台标版权</td><td>归各电台所有，只做「按官方地址下载 + 本地缓存展示」，不打包分发、不二次加工。</td></tr>
+  </tbody>
+</table>
+
+<h3>12.2 合规边界</h3>
+<ul>
+  <li>音频流版权归各广播电台所有，本应用<strong>仅作为播放器访问公开接口</strong>，不缓存、不转存、不分发任何音频内容；</li>
+  <li>逆向分析的样本是用户<strong>自有车机上已安装的应用</strong>，目的为理解车机适配方式 + 重建等价功能；</li>
+  <li>重建产物<strong>不含</strong>云听 / 考拉FM 的任何代码、图标、私有接口；</li>
+  <li><strong>未绕过任何付费或授权校验</strong>（本应用无 DRM 需求）；</li>
+  <li>不采集任何个人信息，IP 只用于判断省份且不上传。</li>
+</ul>
+
+<hr>
+<p style="text-align:center;color:var(--t3);font-size:12.5px">
+  星愿收音机 v1.5.1 · 功能说明书<br>
+  数据来自央广 <code>radio.cn</code>（与云听同源），只读公开接口
+</p>
+
+</main>
+</div>
+
+<script>
+// 目录跟随滚动高亮
+(function(){
+  const links = [...document.querySelectorAll('nav a')];
+  const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const onScroll = () => {
+    let idx = 0;
+    const y = window.scrollY + 120;
+    targets.forEach((t, i) => { if (t.offsetTop <= y) idx = i; });
+    links.forEach((a, i) => a.classList.toggle('on', i === idx));
+  };
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

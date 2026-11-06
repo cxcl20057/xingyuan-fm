@@ -1,0 +1,26 @@
+<Slide style={{ padding: 60, background: '#FFFFFF' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1F2937' }}>镜头 3 · 核心亮点</Text>
+    <Box style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 14, paddingRight: 14, background: '#FFF3EA', borderRadius: 20 }}>
+      <Text style={{ fontSize: 16, color: '#FF6600', fontWeight: 'bold' }}>11 – 18 秒</Text>
+    </Box>
+  </Box>
+  <Box style={{ height: 1, background: '#E5E7EB', marginTop: 16, marginBottom: 40 }} />
+  <Box style={{ flexDirection: 'row', gap: 32 }}>
+    <Box style={{ flex: 1, paddingTop: 40, paddingBottom: 40, paddingLeft: 32, paddingRight: 32, background: '#F5F6F8', borderRadius: 16, justifyContent: 'space-between' }}>
+      <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FF6600' }}>零打扰</Text>
+      <Text style={{ fontSize: 22, color: '#1F2937', lineHeight: 1.5, marginTop: 16 }}>无广告 · 无开屏 · 无登录 · 无埋点</Text>
+    </Box>
+    <Box style={{ flex: 1, paddingTop: 40, paddingBottom: 40, paddingLeft: 32, paddingRight: 32, background: '#F5F6F8', borderRadius: 16, justifyContent: 'space-between' }}>
+      <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FF6600' }}>音质择优</Text>
+      <Text style={{ fontSize: 22, color: '#1F2937', lineHeight: 1.5, marginTop: 16 }}>最高码率优先，卡顿自动降档</Text>
+    </Box>
+    <Box style={{ flex: 1, paddingTop: 40, paddingBottom: 40, paddingLeft: 32, paddingRight: 32, background: '#F5F6F8', borderRadius: 16, justifyContent: 'space-between' }}>
+      <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FF6600' }}>断流重连</Text>
+      <Text style={{ fontSize: 22, color: '#1F2937', lineHeight: 1.5, marginTop: 16 }}>自动重连，换台无静音空档</Text>
+    </Box>
+  </Box>
+  <Box style={{ marginTop: 40, paddingTop: 24, paddingBottom: 24, paddingLeft: 28, paddingRight: 28, background: '#FFF3EA', borderRadius: 12 }}>
+    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FF6600', lineHeight: 1.4 }}>旁白：音质自动择优，断流自动重连；无广告、无开屏、无登录</Text>
+  </Box>
+</Slide>

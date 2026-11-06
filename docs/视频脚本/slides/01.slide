@@ -1,0 +1,24 @@
+<Slide style={{ padding: 60, background: '#FFFFFF' }}>
+  <Box style={{ flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 36 }}>
+      <Box style={{ width: 44, height: 44, background: '#FF6600', borderRadius: 22 }} />
+      <Text style={{ fontSize: 20, color: '#FF6600', fontWeight: 'bold', letterSpacing: 4 }}>产品介绍 · 分镜脚本</Text>
+    </Box>
+    <Text style={{ fontSize: 88, fontWeight: 'bold', color: '#1F2937', lineHeight: 1.1 }}>星愿收音机</Text>
+    <Text style={{ fontSize: 30, color: '#6B7280', marginTop: 18 }}>纯净 FM · 为车机而生</Text>
+    <Box style={{ flexDirection: 'row', gap: 24, marginTop: 88 }}>
+      <Box style={{ width: 210, paddingTop: 24, paddingBottom: 24, paddingLeft: 28, paddingRight: 28, background: '#FFF3EA', borderRadius: 12 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FF6600' }}>30 秒</Text>
+        <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 4 }}>成片时长</Text>
+      </Box>
+      <Box style={{ width: 210, paddingTop: 24, paddingBottom: 24, paddingLeft: 28, paddingRight: 28, background: '#FFF3EA', borderRadius: 12 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FF6600' }}>5 镜</Text>
+        <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 4 }}>分镜数量</Text>
+      </Box>
+      <Box style={{ width: 210, paddingTop: 24, paddingBottom: 24, paddingLeft: 28, paddingRight: 28, background: '#FFF3EA', borderRadius: 12 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FF6600' }}>16:9</Text>
+        <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 4 }}>横屏画幅</Text>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

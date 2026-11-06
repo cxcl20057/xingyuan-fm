@@ -1,0 +1,33 @@
+# ---- Android / Gradle ----
+*.iml
+.gradle/
+build/
+local.properties
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ---- 构建产物（发布包单独放 releases/，由发布脚本生成）----
+app/build/
+releases/*.apk
+
+# ---- 临时预览（出包前的 HTML 预览 / 模拟器截图，用完即弃）----
+_preview/
+
+# ---- 本工作区里的并列子项目（各自独立，不属本仓库追踪范围）----
+# 转移项目时一并放进「星愿收音机」工作区，但都不是本仓库（xinyuan-radio-carlink）的内容：
+# xinyuan-radio 是主线旧副本（独立 git 仓库，历史参照）。忽略它，避免 git add -A 误把嵌套仓库当 gitlink 提交。
+/xinyuan-radio/
+
+# ---- 密钥与私有二进制（公开仓库不携带，本地/私人仓库构建时自行放入）----
+keystore/
+app/libs/eas-sdk.jar
+
+# ---- 日志 ----
+*.log
+
+# ---- Python 工具的字节码缓存 ----
+__pycache__/
+*.pyc

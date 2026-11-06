@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  车机播放卡的收藏键底座（56dp 圆）。
+
+  状态表达分工：
+    · 是否已收藏 → 心形本身（空心灰 / 实心深橙，见 fav_icon_tint_car）
+    · 底座只做「可点」与「焦点」：未收藏浅灰底，已收藏浅橙底 + 橙描边
+  两者用不同手段，不会互相盖掉。上一版是深底 + 亮橙描边，放在浅色界面里会突兀。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_selected="true" android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_wash" />
+            <stroke android:width="3dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/accent_wash" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/panel" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/surface_muted" />
+        </shape>
+    </item>
+</selector>

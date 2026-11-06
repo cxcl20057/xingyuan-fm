@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  收藏心形的着色（手机 / 列表行）。
+
+  为什么用 ColorStateList 而不是在代码里 setColorFilter：
+  图标的 selected 通过 duplicateParentState 跟随外层按钮，
+  于是「切台 → 收藏状态变 → 按钮 selected 变 → 图标颜色变」是一条链。
+  写在代码里的话，一旦新增一个入口（比如以后从通知栏收藏）就必然漏掉。
+
+  v2.0 浅色：未收藏的 @color/text_hint 是浅灰空心轮廓，弱到不抢台名；
+  已收藏换成喜马橙 —— 在白色列表上足够跳，又不会像实心色块那样成排发亮。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/accent" android:state_selected="true" />
+    <item android:color="@color/text_hint" />
+</selector>

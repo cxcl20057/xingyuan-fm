@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  播放图标（实心三角，Material "play_arrow"）。
+
+  为什么用矢量路径而不是字体符号（▶ U+25B6）：
+  字体符号要靠设备上恰好装有对应 glyph 的字体才渲染得出来。
+  国产 ROM（ColorOS / MIUI / EMUI）字体裁剪各不相同，缺字时会画成「」方框，
+  在车机上尤其难看且没法修。矢量路径是纯几何，任何设备都一模一样。
+
+  24dp 的设计画布、viewBox 24×24，与 Material 官方图标网格一致，
+  所以在 20~40dp 任意尺寸下都能直接缩放而不走形。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="@color/icon_on_accent"
+        android:pathData="M8,5v14l11,-7z" />
+</vector>

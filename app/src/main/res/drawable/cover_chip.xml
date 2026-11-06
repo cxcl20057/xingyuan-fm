@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  列表行「台名首字」封面方块（v2.1）。
+  喜马拉雅是封面驱动的内容列表：v2.0 这里只有一个数字序号，
+  换成 44dp 圆角方形的首字块之后，扫视时每一行都有独立的视觉锚点。
+  颜色走 @color，夜间自动变成深蓝灰底 + 浅字。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/cover_bg" />
+    <corners android:radius="12dp" />
+</shape>

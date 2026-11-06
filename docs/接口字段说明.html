@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>央广 radio.cn 接口 · 字段说明</title>
+<style>
+:root{--bg:#0F1319;--card:#171C23;--line:#252C36;--t1:#E6EDF3;--t2:#A8B3BF;--t3:#6E7885;
+--accent:#FF7A1A;--accent-soft:rgba(255,122,26,.10);--ok:#3FB950;--warn:#FFB74D;--err:#FF6B6B;--code:#C9D1D9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t2);font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.page{max-width:920px;margin:0 auto;padding:44px 26px 100px}
+h1{font-size:28px;color:var(--t1);margin:0 0 6px;letter-spacing:-.3px}
+h1+blockquote{margin-top:18px}
+h2{font-size:20px;color:var(--t1);margin:44px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;color:var(--accent);margin:28px 0 10px}
+h4{font-size:14.5px;color:var(--t1);margin:18px 0 8px}
+p{margin:10px 0}
+strong{color:var(--t1)}
+a{color:var(--accent)}
+blockquote{margin:14px 0;padding:11px 16px;background:var(--accent-soft);border-left:3px solid var(--accent);
+border-radius:0 8px 8px 0;color:var(--t2);font-size:14px}
+blockquote p{margin:4px 0}
+code{background:#11161C;border:1px solid var(--line);border-radius:4px;padding:1px 6px;
+font-family:"JetBrains Mono",Consolas,monospace;font-size:12.8px;color:var(--code)}
+pre{background:#11161C;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+font-size:12.8px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+pre code{background:none;border:0;padding:0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.8px;background:var(--card);
+border-radius:10px;overflow:hidden;display:table}
+th{background:#1F252D;color:var(--t1);text-align:left;font-weight:700;padding:9px 12px;
+font-size:13px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid #20262E;vertical-align:top}
+td:first-child{width:1%;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#1C2128}
+ul,ol{padding-left:22px;margin:10px 0}
+li{margin:5px 0}
+li input[type=checkbox]{margin-right:7px;accent-color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:38px 0}
+em{color:var(--t3);font-style:normal;font-size:13.5px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}
+.pill{background:#1D232B;border:1px solid var(--line);border-radius:20px;padding:4px 13px;
+font-size:12.5px;color:var(--t2)}
+.pill.hot{background:var(--accent-soft);border-color:rgba(255,122,26,.4);color:var(--accent);font-weight:700}
+@media(max-width:700px){
+  .page{padding:26px 15px 70px}
+  h1{font-size:22px}
+  h2{font-size:18px}
+  table{font-size:12.5px;table-layout:auto}
+  th,td{padding:7px 8px}
+  /* 首列是短标签，给个最小宽度避免被压成竖排；其余交给浏览器 */
+  td:first-child{width:auto!important;white-space:nowrap!important;min-width:5.2em}
+  td{word-break:break-word}
+  td code{white-space:normal;word-break:break-all}
+}
+
+li:has(>input[type=checkbox]){list-style:none;margin-left:-20px}
+input[type=checkbox]{appearance:none;width:14px;height:14px;border:1.5px solid #3A424D;
+border-radius:3px;vertical-align:-2px;margin-right:8px;background:#141A20}
+
+.tablewrap{overflow-x:auto;margin:14px 0;border-radius:10px}
+.tablewrap table{margin:0;min-width:560px}
+.tablewrap td,.tablewrap th{white-space:nowrap}
+.tablewrap td:first-child{width:auto}
+.ok{color:#3FB950;font-weight:700}
+.warn{color:#FFB74D;font-weight:700}
+.bad{color:#FF6B6B;font-weight:700}
+/* 状态标记做成小胶囊，避免混在正文里显得突兀 */
+/* 只在正文段落里做成胶囊；标题后紧跟的裸标记去掉胶囊，只留颜色 */
+p>b.ok,p>b.warn,p>b.bad,li>b.ok,li>b.warn,li>b.bad{
+  display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:5px;margin:0 2px;vertical-align:1px}
+h2>b,h3>b,h4>b{display:inline-block;font-size:12px;font-weight:600;padding:0 8px;
+  border-radius:5px;margin-left:8px;vertical-align:2px;background:#1F252D}
+p>b.ok,li>b.ok{background:rgba(63,185,80,.14)}
+p>b.warn,li>b.warn{background:rgba(255,183,77,.14)}
+p>b.bad,li>b.bad{background:rgba(255,107,107,.14)}
+@media(max-width:700px){
+  table{display:block;overflow-x:auto;min-width:0}
+  table thead,table tbody,table tr{display:table}
+  table thead{width:100%}
+  table tr{width:100%}
+  table{white-space:nowrap}
+  table td,table th{white-space:nowrap!important;width:auto!important;min-width:0!important}
+  table td:first-child{min-width:4.5em!important}
+  .tablewrap{border:1px solid #252C36}
+  .tablewrap::after{content:"← 左右滑动查看完整表格 →";display:block;padding:6px 9px;
+    font-size:11.5px;color:#6E7885;background:#141A20;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>央广 radio.cn 接口 · 字段说明</h1>
+<blockquote>
+<p>配套 <a href="功能需求文档.html"><code>功能需求文档</code></a> 的接口层附件。给重新开发的人照着调接口用。
+所有标 <b class="ok">已验证</b> 的结论都是<strong>本次实测</strong>得到的；标 <b class="warn">待确认</b> 的是推断或存在不确定性，实现时要做兜底。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>实测时间</td>
+<td>2026-10-23 10:20–10:40（UTC+8）</td>
+</tr>
+<tr>
+<td>网关</td>
+<td><code>https://ytmsout.radio.cn</code></td>
+</tr>
+<tr>
+<td>逆向依据</td>
+<td><code>https://www.radio.cn/pc-portal/js/api.js</code>（已核对源码）</td>
+</tr>
+<tr>
+<td>服务状态</td>
+<td>实测期间全部接口 HTTP 200 正常</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>0. 先看这几条（最容易踩的坑）</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>结论</th>
+<th>影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>播放地址全是 <code>http://</code>，没有一个 <code>https://</code></strong> <b class="ok">已验证</b></td>
+<td>Android 9 起默认禁止明文流量，不配置 <code>usesCleartextTraffic</code> 会直接播不了</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>同名字段在不同省份是不同格式</strong> <b class="ok">已验证</b></td>
+<td><code>mp3PlayUrlLow</code> 在四川是 <code>.mp3</code> 流，在北京市是 <code>.m3u8</code> 清单。<strong>必须按 URL 内容判断协议，不能按字段名判断</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong><code>playUrlMulti</code> 多数省份为空</strong> <b class="ok">已验证</b></td>
+<td>四川/北京/广东/上海/海南全部为空，只有「国家」台有值（且是 m3u8）。把它当首选会直接踩空</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>播放地址的 <code>key</code> 无法本地生成</strong> <b class="warn">待确认</b></td>
+<td>试了 7 种常见拼法都不匹配。结论：<strong>只能通过接口拿，不能自己拼</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong><code>subtitle</code> 是当前节目名，不是电台副标题</strong> <b class="ok">已验证</b></td>
+<td>值是「正在直播：新闻进行时」这种，可直接用来显示节目名</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>省份列表只有 32 条，没有港澳台</strong> <b class="ok">已验证</b></td>
+<td>含「国家(0)」和「新疆兵团(660000)」，不含香港/澳门/台湾</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. 请求规范</h2>
+<h3>1.1 基础信息</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网关地址</td>
+<td><code>https://ytmsout.radio.cn</code></td>
+</tr>
+<tr>
+<td>方法</td>
+<td>全部 <code>GET</code></td>
+</tr>
+<tr>
+<td>参数位置</td>
+<td>URL query（单参数接口会拼进路径，见 1.4）</td>
+</tr>
+<tr>
+<td>响应格式</td>
+<td>JSON（<code>Content-Type: application/json</code>）</td>
+</tr>
+</tbody>
+</table>
+<h3>1.2 请求头（必须）</h3>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>值</th>
+<th>缺失后果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Content-Type</code></td>
+<td><code>application/json</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>equipmentId</code></td>
+<td><code>0000</code></td>
+<td>未单独验证</td>
+</tr>
+<tr>
+<td><code>platformCode</code></td>
+<td><code>WEB</code></td>
+<td>实测<strong>缺失仍返回正常</strong>，但建议带上</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>当前毫秒时间戳，如 <code>1792722303000</code></td>
+<td><b class="ok">已验证</b> 缺失 → <code>code=1001 参数不合法</code></td>
+</tr>
+<tr>
+<td><code>sign</code></td>
+<td>见 1.3</td>
+<td><b class="ok">已验证</b> 缺失或错误 → <code>code=1001</code></td>
+</tr>
+<tr>
+<td><code>User-Agent</code></td>
+<td>任意浏览器 UA</td>
+<td>建议带</td>
+</tr>
+</tbody>
+</table>
+<h3>1.3 签名算法 <b class="ok">已验证</b></h3>
+<pre><code>sign = UPPER( MD5( sortByKey(参数) + &quot;&amp;timestamp=&quot; + ts + &quot;&amp;key=&quot; + KEY ) )
+</code></pre>
+<ul>
+<li><code>KEY = f0fc4c668392f9f9a447e48584c214ee</code>（前端源码公开常量）</li>
+<li><code>sortByKey(参数)</code>：把所有 query 参数<strong>按键名字母升序</strong>拼成 <code>k=v&amp;k=v</code></li>
+<li>参数为空时，<strong>直接以 <code>timestamp=</code> 开头，不加前导 <code>&amp;</code></strong></li>
+</ul>
+<p><strong>已验证的对照值（ts = 1700000000000）</strong>，可用来校验自己的实现：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>sign</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空参</td>
+<td><code>87E86F1CF502D0DD091305F7749B30F0</code></td>
+</tr>
+<tr>
+<td><code>provinceCode=510000</code></td>
+<td><code>554F407F527047F71201E3B39DE95DBF</code></td>
+</tr>
+<tr>
+<td><code>categoryId=0&amp;provinceCode=510000</code></td>
+<td><code>5C9578E663E0B97038178E0EA24DDB35</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><b class="ok">已验证</b> 参数<strong>传入顺序不影响结果</strong>（内部会排序），实测倒序传入得到同一签名。</p>
+</blockquote>
+<p><strong>注意 timestamp 超时</strong> <b class="ok">已验证</b>：用 1 小时前的时间戳请求 → <code>code=1050 访问请求过期</code>。
+所以<strong>不要在客户端缓存签名结果</strong>，每次请求现算。</p>
+<h3>1.4 单参数特例 <b class="warn">待确认</b></h3>
+<p>官网源码里有一条规则：<strong>当参数只有 1 个时，会把值拼进路径</strong>（<code>/path/值</code>），而不是放 query。</p>
+<p>本项目用到的两个接口都是 0 参数或 2 参数，所以没触发。若要调用其它接口，注意这条。</p>
+<hr />
+<h2>2. 接口一：省级行政区列表</h2>
+<pre><code>GET /web/appProvince/list/all
+参数：无
+</code></pre>
+<h3>2.1 响应结构 <b class="ok">已验证</b></h3>
+<pre><code class="language-json">{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;SUCCESS&quot;,
+  &quot;data&quot;: [
+    { &quot;provinceName&quot;: &quot;国家&quot;, &quot;provinceCode&quot;: 0 },
+    { &quot;provinceName&quot;: &quot;安徽&quot;, &quot;provinceCode&quot;: 340000 }
+  ],
+  &quot;extInfo&quot;: null
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code</code></td>
+<td>int</td>
+<td><code>0</code> = 成功，非 0 见第 5 节错误码</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>string</td>
+<td><code>SUCCESS</code> 或错误描述</td>
+</tr>
+<tr>
+<td><code>data[].provinceName</code></td>
+<td>string</td>
+<td>省级行政区名称</td>
+</tr>
+<tr>
+<td><code>data[].provinceCode</code></td>
+<td>int</td>
+<td>行政区划编码，<strong>0 表示「国家」</strong></td>
+</tr>
+<tr>
+<td><code>extInfo</code></td>
+<td>any</td>
+<td>实测恒为 <code>null</code>，忽略</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 完整省份清单（32 条，实测原样）<b class="ok">已验证</b></h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>序号</th>
+<th>名称</th>
+<th>编码</th>
+<th></th>
+<th>序号</th>
+<th>名称</th>
+<th>编码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>国家</td>
+<td>0</td>
+<td></td>
+<td>17</td>
+<td>江西</td>
+<td>360000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>安徽</td>
+<td>340000</td>
+<td></td>
+<td>18</td>
+<td>辽宁</td>
+<td>210000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>北京</td>
+<td>110000</td>
+<td></td>
+<td>19</td>
+<td>内蒙古</td>
+<td>150000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>重庆</td>
+<td>500000</td>
+<td></td>
+<td>20</td>
+<td>宁夏</td>
+<td>640000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>福建</td>
+<td>350000</td>
+<td></td>
+<td>21</td>
+<td>青海</td>
+<td>630000</td>
+</tr>
+<tr>
+<td>6</td>
+<td>甘肃</td>
+<td>620000</td>
+<td></td>
+<td>22</td>
+<td>山东</td>
+<td>370000</td>
+</tr>
+<tr>
+<td>7</td>
+<td>广东</td>
+<td>440000</td>
+<td></td>
+<td>23</td>
+<td>山西</td>
+<td>140000</td>
+</tr>
+<tr>
+<td>8</td>
+<td>广西</td>
+<td>450000</td>
+<td></td>
+<td>24</td>
+<td>陕西</td>
+<td>610000</td>
+</tr>
+<tr>
+<td>9</td>
+<td>贵州</td>
+<td>520000</td>
+<td></td>
+<td>25</td>
+<td>上海</td>
+<td>310000</td>
+</tr>
+<tr>
+<td>10</td>
+<td>海南</td>
+<td>460000</td>
+<td></td>
+<td>26</td>
+<td>四川</td>
+<td>510000</td>
+</tr>
+<tr>
+<td>11</td>
+<td>河北</td>
+<td>130000</td>
+<td></td>
+<td>27</td>
+<td>西藏</td>
+<td>540000</td>
+</tr>
+<tr>
+<td>12</td>
+<td>河南</td>
+<td>410000</td>
+<td></td>
+<td>28</td>
+<td>新疆</td>
+<td>650000</td>
+</tr>
+<tr>
+<td>13</td>
+<td>黑龙江</td>
+<td>230000</td>
+<td></td>
+<td>29</td>
+<td>新疆兵团</td>
+<td>660000</td>
+</tr>
+<tr>
+<td>14</td>
+<td>湖北</td>
+<td>420000</td>
+<td></td>
+<td>30</td>
+<td>云南</td>
+<td>530000</td>
+</tr>
+<tr>
+<td>15</td>
+<td>湖南</td>
+<td>430000</td>
+<td></td>
+<td>31</td>
+<td>浙江</td>
+<td>330000</td>
+</tr>
+<tr>
+<td>16</td>
+<td>吉林</td>
+<td>220000</td>
+<td></td>
+<td>32</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><b class="warn">待确认</b> 注意：<strong>没有香港、澳门、台湾</strong>；有「新疆兵团」这种非标准行政区。
+若产品需要港澳台，得自己补内置条目（但接口按缺省编码大概率查不到台）。</p>
+</blockquote>
+<hr />
+<h2>3. 接口二：电台列表（含播放地址）</h2>
+<pre><code>GET /web/appBroadcast/list?categoryId=0&amp;provinceCode=510000
+</code></pre>
+<h3>3.1 请求参数 <b class="ok">已验证</b></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>必填</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>categoryId</code></td>
+<td>建议必填</td>
+<td>分类筛选，见 3.2。<strong><code>0</code> = 全部</strong></td>
+</tr>
+<tr>
+<td><code>provinceCode</code></td>
+<td>是</td>
+<td>省份编码。<code>0</code> 或不传 = 国家台（19 台）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>参数边界实测</strong> <b class="ok">已验证</b>：</p>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不传 <code>categoryId</code></td>
+<td>仍返回该省全部台（四川 44 台），等同 <code>0</code></td>
+</tr>
+<tr>
+<td><code>provinceCode</code> 传空</td>
+<td>返回国家台 19 个（等同 <code>0</code>）</td>
+</tr>
+<tr>
+<td><code>provinceCode=999999</code>（不存在）</td>
+<td><code>code=0</code>，<code>data=[]</code>，<strong>不报错</strong></td>
+</tr>
+<tr>
+<td><code>categoryId</code> 传非 0 的任意值（如 <code>1</code>、<code>-1</code>、<code>abc</code>）</td>
+<td>都返回 <strong>52 台</strong>（44 + 8），含义不明 <b class="warn">待确认</b></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><b class="warn">待确认</b> <strong>建议只用 <code>categoryId=0</code></strong>。传 1 会多出 8 个台（如「935爱旅游」「成都经典946」「宜宾综合广播」），
+这 8 个台在 <code>categoryId=0</code> 里查不到，可能是测试/灰度数据，稳定性未知。</p>
+</blockquote>
+<h3>3.2 分类列表 <b class="ok">已验证</b></h3>
+<p>另有一个分类接口（<code>GET /web/appCategory/list/all</code>，无参数），返回 10 个分类：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>id</th>
+<th>名称</th>
+<th></th>
+<th>id</th>
+<th>名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>全部</td>
+<td></td>
+<td>17</td>
+<td>综艺</td>
+</tr>
+<tr>
+<td>7</td>
+<td>热门</td>
+<td></td>
+<td>5</td>
+<td>音乐</td>
+</tr>
+<tr>
+<td>9</td>
+<td>新闻</td>
+<td></td>
+<td>19</td>
+<td>故事</td>
+</tr>
+<tr>
+<td>11</td>
+<td>财经</td>
+<td></td>
+<td>21</td>
+<td>民族</td>
+</tr>
+<tr>
+<td>13</td>
+<td>生活</td>
+<td></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>15</td>
+<td>交通</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>分类筛选是真的生效的</strong> <b class="ok">已验证</b>（四川实测：全部 44 / 交通 15 / 新闻 17 / 音乐 8）。
+若非要做「按类型筛选」，用这里的 id 即可。</p>
+<h3>3.3 响应结构 <b class="ok">已验证</b></h3>
+<pre><code class="language-json">{
+  &quot;code&quot;: 0,
+  &quot;message&quot;: &quot;SUCCESS&quot;,
+  &quot;data&quot;: [
+    {
+      &quot;contentId&quot;: &quot;749&quot;,
+      &quot;title&quot;: &quot;中国交通广播（四川）&quot;,
+      &quot;subtitle&quot;: &quot;正在直播：新闻面对面&quot;,
+      &quot;image&quot;: &quot;https://ytmedia.radio.cn/25010/adfile/202505/19/18/dQlA....jpg&quot;,
+      &quot;playUrlLow&quot;:    &quot;http://ytcast.radio.cn/72/radios/10749/index_10749.m3u8?type=1&amp;key=...&amp;time=6adac586&quot;,
+      &quot;mp3PlayUrlLow&quot;: &quot;http://ytcastmp3.radio.cn/72/stream_10749.mp3?type=1&amp;key=...&amp;time=6adac586&quot;,
+      &quot;mp3PlayUrlHigh&quot;:&quot;http://ytcastmp3.radio.cn/72/stream_20749.mp3?type=1&amp;key=...&amp;time=6adac586&quot;,
+      &quot;playUrlMulti&quot;: &quot;&quot;
+    }
+  ],
+  &quot;extInfo&quot;: null
+}
+</code></pre>
+<blockquote>
+<p><b class="ok">已验证</b> <strong>字段就这 8 个，没有节目单/时段字段</strong>。用 <code>subtitle</code> 显示当前节目名，用 <code>00:00-24:00</code> 占位时间轴。</p>
+</blockquote>
+<h3>3.4 字段明细</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>填充率（四川 44 台）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>contentId</code></td>
+<td>string</td>
+<td>44/44 <b class="ok">已验证</b></td>
+<td><strong>电台唯一 ID</strong>（数字字符串，如 <code>"749"</code>）。续播、收藏、隐藏都用它做键</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>string</td>
+<td>44/44 <b class="ok">已验证</b></td>
+<td>台名。有「中国交通广播（四川）」这种带括号的</td>
+</tr>
+<tr>
+<td><code>subtitle</code></td>
+<td>string</td>
+<td>44/44 <b class="ok">已验证</b></td>
+<td><strong>当前节目名</strong>。44 台里 33 台是占位文案 <code>暂无节目单</code>，其余是 <code>正在直播：XXX</code></td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td>string</td>
+<td>44/44 <b class="ok">已验证</b></td>
+<td>台标图 URL（图片是 HTTPS，播放流是 HTTP，注意区分）</td>
+</tr>
+<tr>
+<td><code>playUrlLow</code></td>
+<td>string</td>
+<td>44/44 <b class="ok">已验证</b></td>
+<td>低码率流。<strong>多为 m3u8</strong></td>
+</tr>
+<tr>
+<td><code>mp3PlayUrlLow</code></td>
+<td>string</td>
+<td>39/44（四川）<b class="ok">已验证</b></td>
+<td>名义上是「低码率 MP3」，<strong>实际格式因省而异</strong></td>
+</tr>
+<tr>
+<td><code>mp3PlayUrlHigh</code></td>
+<td>string</td>
+<td>39/44（四川）<b class="ok">已验证</b></td>
+<td>名义上是「高码率 MP3」，同上</td>
+</tr>
+<tr>
+<td><code>playUrlMulti</code></td>
+<td>string</td>
+<td><strong>0/44</strong>（四川）<b class="ok">已验证</b></td>
+<td>多码率流。<strong>绝大多数省份为空字符串</strong></td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.5 各字段的真实格式（关键！）<b class="ok">已验证</b></h3>
+<p>按省份实测，同名字段的实际协议<strong>完全不同</strong>：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>provinceCode</th>
+<th><code>playUrlMulti</code></th>
+<th><code>mp3PlayUrlLow</code></th>
+<th><code>mp3PlayUrlHigh</code></th>
+<th><code>playUrlLow</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code>（国家）</td>
+<td><strong>m3u8</strong> ×19</td>
+<td><strong>m3u8</strong> ×19</td>
+<td><strong>m3u8</strong> ×19</td>
+<td>m3u8 ×19</td>
+</tr>
+<tr>
+<td><code>110000</code>（北京）</td>
+<td>空 ×5</td>
+<td>m3u8 ×3</td>
+<td>m3u8 ×3</td>
+<td>m3u8 ×5</td>
+</tr>
+<tr>
+<td><code>510000</code>（四川）</td>
+<td>空 ×44</td>
+<td><strong>mp3</strong> ×39</td>
+<td><strong>mp3</strong> ×39</td>
+<td>m3u8 ×44</td>
+</tr>
+<tr>
+<td><code>440000</code>（广东）</td>
+<td>空 ×47</td>
+<td><strong>mp3</strong> ×32</td>
+<td><strong>mp3</strong> ×32</td>
+<td>m3u8 ×47</td>
+</tr>
+<tr>
+<td><code>310000</code>（上海）</td>
+<td>空 ×7</td>
+<td><strong>mp3</strong> ×5</td>
+<td><strong>mp3</strong> ×5</td>
+<td>m3u8 ×7</td>
+</tr>
+<tr>
+<td><code>460000</code>（海南）</td>
+<td>空 ×10</td>
+<td><strong>mp3</strong> ×7</td>
+<td><strong>mp3</strong> ×7</td>
+<td>m3u8 ×10</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>结论</strong>：
+- <code>playUrlLow</code> 是最稳定的——<strong>各省都有值，且都是 m3u8</strong>。
+- <code>mp3PlayUrlLow/High</code> 名字骗人：北京/国家台给的是 m3u8，只有四川/广东/上海/海南这些给真 mp3。
+- <strong>必须按 URL 判断</strong>：含 <code>.m3u8</code> → HLS 播放器；含 <code>.mp3</code> → 直接流。</p>
+<h3>3.6 域名与协议 <b class="ok">已验证</b></h3>
+<table>
+<thead>
+<tr>
+<th>域名</th>
+<th>出现次数</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ytcast.radio.cn</code></td>
+<td>171</td>
+<td>HLS（m3u8）</td>
+</tr>
+<tr>
+<td><code>ytcastmp3.radio.cn</code></td>
+<td>170</td>
+<td>MP3 流</td>
+</tr>
+<tr>
+<td><code>ytcast2.radio.cn</code></td>
+<td>55</td>
+<td>国家台 HLS</td>
+</tr>
+<tr>
+<td><code>ytlive.radio.cn</code></td>
+<td>19</td>
+<td>国家台 HLS</td>
+</tr>
+</tbody>
+</table>
+<p>台标图片域名：<code>ytmedia.radio.cn</code>（60 次）、<code>ytdem.radio.cn</code>（2）、<code>iovimg.radio.cn</code>（1）。</p>
+<blockquote>
+<p><b class="ok">已验证</b> <strong>播放流 415 个 URL 全部是 <code>http://</code>，零个 https。</strong></p>
+</blockquote>
+<hr />
+<h2>4. 播放地址结构（重点）</h2>
+<h3>4.1 URL 形态 <b class="ok">已验证</b></h3>
+<pre><code>http://ytcastmp3.radio.cn/72/stream_10749.mp3?type=1&amp;key=&lt;32位小写hex&gt;&amp;time=&lt;8位hex&gt;
+http://ytcast.radio.cn/72/radios/10749/index_10749.m3u8?type=1&amp;key=&lt;32位hex&gt;&amp;time=&lt;8位hex&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>实测结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td>固定 <code>1</code></td>
+<td>未发现其它取值</td>
+</tr>
+<tr>
+<td><code>key</code></td>
+<td>32 位十六进制签名</td>
+<td><b class="warn">待确认</b> <strong>无法本地生成</strong>，只能从接口取</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td>8 位十六进制</td>
+<td><b class="ok">已验证</b> <strong>就是签发的 Unix 秒</strong>（十进制 1792722303 = 2026-10-23 10:25:03）</td>
+</tr>
+</tbody>
+</table>
+<h3>4.2 <code>key</code> 能否自己算？<b class="bad">不支持</b> 不能 <b class="warn">待确认</b></h3>
+<p>试过 7 种常见拼法（<code>md5(time)</code>、<code>md5(path)</code>、<code>md5(path+time)</code>、<code>md5(time+path)</code>、<code>md5(path+KEY)</code>、<code>md5(KEY+path)</code>、<code>md5(path&amp;time&amp;key)</code>），<strong>全部不匹配</strong>。</p>
+<blockquote>
+<p><strong>结论：<code>key</code> 是服务端用未知密钥算的，客户端无法生成。</strong>
+好在<strong>不需要生成</strong>——接口每次都返回现成地址。这直接决定了缓存策略（见 4.4）。</p>
+</blockquote>
+<h3>4.3 地址有效期 <b class="ok">已验证</b></h3>
+<table>
+<thead>
+<tr>
+<th>测试</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同一秒内两次请求</td>
+<td><code>key</code> 与 <code>time</code> <strong>完全相同</strong> → 是按「时间片」派生的，不是一次性随机</td>
+</tr>
+<tr>
+<td>篡改 <code>time</code>（+1 小时）</td>
+<td><b class="ok">已验证</b> <strong>立刻 HTTP 403 Forbidden</strong> → 服务端严格校验 key/path/time 三元组</td>
+</tr>
+<tr>
+<td>原样保存的地址放置 32 分钟</td>
+<td><b class="ok">已验证</b> 仍可拉流（HTTP 200/206）</td>
+</tr>
+<tr>
+<td>原样保存的地址放置 6 小时以上</td>
+<td><b class="warn">待确认</b> 未实测出确切过期点，保守按 30 分钟用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>落地建议</strong>：</p>
+<pre><code>缓存 TTL = 30 分钟（新鲜期，直接复用）
+硬过期   = 6 小时（超过必须重新申请）
+失败处理 = 一旦 403/404，立刻重新拉整省列表换新地址
+</code></pre>
+<h3>4.4 拉流验证 <b class="ok">已验证</b></h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>响应</th>
+<th>Content-Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mp3PlayUrlLow</code></td>
+<td><code>HTTP/1.1 200 OK</code></td>
+<td><code>audio/mpeg</code>（带 <code>icy-pub: 0</code>，是 Icecast 风格直播流）</td>
+</tr>
+<tr>
+<td><code>mp3PlayUrlHigh</code></td>
+<td><code>HTTP/1.1 200 OK</code></td>
+<td><code>audio/mpeg</code></td>
+</tr>
+<tr>
+<td><code>playUrlLow</code></td>
+<td><code>HTTP/1.1 206 Partial Content</code></td>
+<td><code>application/octet-stream</code>（m3u8 清单文件）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>直播流是<strong>无限长度</strong>的，验证时<strong>务必用 <code>Range: bytes=0-0</code> 或 <code>curl -r 0-0</code> 只取 1 字节</strong>，
+否则会一直读下去不返回（我第一次就卡在这）。播放器本身没问题，但<strong>自检脚本要小心</strong>。</p>
+</blockquote>
+<p>内容协商测试 <b class="ok">已验证</b>：换 <code>Accept: application/x-mpegURL</code> 不会改变返回格式，<strong>服务端不按 Accept 协商</strong>。</p>
+<hr />
+<h2>5. 错误码 <b class="ok">已验证</b></h2>
+<p>所有错误都是 <strong>HTTP 200</strong> + 业务码，不会返回 4xx/5xx。</p>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>message</th>
+<th>触发条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td><code>SUCCESS</code></td>
+<td>正常</td>
+</tr>
+<tr>
+<td><code>1001</code></td>
+<td><code>参数不合法</code></td>
+<td>缺 <code>timestamp</code> 头；缺 <code>sign</code> 头</td>
+</tr>
+<tr>
+<td><code>1001</code></td>
+<td><code>网关拦截GET无参数验签错误</code></td>
+<td><code>sign</code> 值错误（如全 0）</td>
+</tr>
+<tr>
+<td><code>1050</code></td>
+<td><code>访问请求过期</code></td>
+<td><code>timestamp</code> 与服务器时间偏差过大（1 小时前已失败）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>处理建议</strong>：<code>code != 0</code> 一律<strong>重新取时间戳并重算签名后重试 1 次</strong>；仍失败则提示网络问题，不要直接崩溃。</p>
+<hr />
+<h2>6. 建议的调用时序</h2>
+<pre><code>① GET /web/appProvince/list/all          → 省份下拉 + 定位后校验省份合法性
+② GET /web/appBroadcast/list?categoryId=0&amp;provinceCode=&lt;目标省&gt;
+   → 拿到该省全部台的 contentId / title / image / 4 个播放地址
+③ 播放时：
+   a. 查本地缓存（contentId → 地址，30 分钟内）→ 命中直接播（秒开）
+   b. 未命中 → 已从 ② 拿到地址 → 直接播
+   c. ③ 失败 → 重新请求 ② ，找到同 contentId 的台，取新地址重试
+④ 台标：image 字段单独下载，本地磁盘缓存（服务端返回 Cache-Control: max-age=2592000，即 30 天）
+</code></pre>
+<p><strong>注意</strong>：没有「按 contentId 单独取地址」的公开接口。刷新单台地址只能<strong>重拉整个省列表</strong>，
+副作用是顺带刷新了同省所有台的地址（对缓存反而是好事）。</p>
+<hr />
+<h2>7. 合规边界</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>接口性质</td>
+<td>网页端<strong>公开接口</strong>，KEY 来自公开 JS 文件</td>
+</tr>
+<tr>
+<td>允许</td>
+<td>读取台列表与播放地址、播放音频</td>
+</tr>
+<tr>
+<td><strong>禁止</strong></td>
+<td>下载/转存/分发音频文件；绕过任何鉴权；用于商业转售</td>
+</tr>
+<tr>
+<td><strong>禁止</strong></td>
+<td>高频轮询（作为服务端数据源批量抓取），这是给客户端实时播放用的</td>
+</tr>
+<tr>
+<td>台标图</td>
+<td>属央广版权素材，仅用于展示对应电台，不得单独分发</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>服务端<strong>无 SLA</strong>，KEY 可能轮换。<strong>网关地址与 KEY 要做成可远程配置</strong>，避免一次变更全线崩溃</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. 未验证 / 存疑项（如实列出）</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>categoryId=1</code> 多出的 8 个台</td>
+<td><b class="warn">待确认</b> 含义不明</td>
+<td>疑似测试或灰度数据，<strong>建议不用</strong></td>
+</tr>
+<tr>
+<td><code>equipmentId</code> / <code>platformCode</code> 缺失的真实后果</td>
+<td><b class="warn">待确认</b> 只测了 platformCode</td>
+<td><code>platformCode</code> 缺失仍正常；<code>equipmentId</code> 未单独测</td>
+</tr>
+<tr>
+<td>地址精确过期点</td>
+<td><b class="warn">待确认</b> 只测到 32 分钟有效</td>
+<td>未见 6 小时内失效的证据，保守取 30 分钟</td>
+</tr>
+<tr>
+<td>节目单 / 时段接口</td>
+<td><b class="bad">不支持</b> 未接入</td>
+<td>官方有 <code>/web/appProgram/listByDate</code>，本项目没用，字段未验证</td>
+</tr>
+<tr>
+<td>港澳台电台</td>
+<td><b class="bad">不支持</b> 接口无</td>
+<td>省份列表就没有这三项</td>
+</tr>
+<tr>
+<td><code>subtitle</code> 的刷新频率</td>
+<td><b class="warn">待确认</b> 未测</td>
+<td>是快照，重新拉列表才会更新，不会自动跳</td>
+</tr>
+<tr>
+<td>KEY 轮换周期</td>
+<td><b class="warn">待确认</b> 未知</td>
+<td>需监控，建议远程配置兜底</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>本文所有 <b class="ok">已验证</b> 结论均可复现：用 1.3 节的签名对照值先校验自己的签名实现，再按第 6 节时序调用。</em></p>
+</div>
+</body>
+</html>

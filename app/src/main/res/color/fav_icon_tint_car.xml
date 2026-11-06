@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  车机播放卡收藏键的着色。
+
+  <h3>为什么和 fav_icon_tint 不同</h3>
+  车机这枚心形底下有个 48dp 圆底座，已收藏时底座是<b>浅橙底 + 橙描边</b>。
+  如果心形也用 accent（#FF6600），橙心落在浅橙底上只剩色相对比，
+  远看就是一团橙 —— 上一版在深色底上踩过同样的坑（那时是"橙心橙圈"）。
+
+  v2.0 的解法：底座浅橙、心形用更深的 @color/accent_deep（#C2410C）。
+  同色相、明度差 2 档，形状仍然是心形，同时和"已收藏"的橙是同一套语言。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 已收藏：深橙实心 -->
+    <item android:color="@color/accent_deep" android:state_selected="true" />
+
+    <!-- 未收藏：浅灰空心轮廓 -->
+    <item android:color="@color/text_hint" />
+</selector>

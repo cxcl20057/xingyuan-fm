@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>车机网络收音机 · 功能需求文档</title>
+<style>
+:root{--bg:#0F1319;--card:#171C23;--line:#252C36;--t1:#E6EDF3;--t2:#A8B3BF;--t3:#6E7885;
+--accent:#FF7A1A;--accent-soft:rgba(255,122,26,.10);--ok:#3FB950;--warn:#FFB74D;--err:#FF6B6B;--code:#C9D1D9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t2);font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+.page{max-width:920px;margin:0 auto;padding:44px 26px 100px}
+h1{font-size:28px;color:var(--t1);margin:0 0 6px;letter-spacing:-.3px}
+h1+blockquote{margin-top:18px}
+h2{font-size:20px;color:var(--t1);margin:44px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;color:var(--accent);margin:28px 0 10px}
+h4{font-size:14.5px;color:var(--t1);margin:18px 0 8px}
+p{margin:10px 0}
+strong{color:var(--t1)}
+a{color:var(--accent)}
+blockquote{margin:14px 0;padding:11px 16px;background:var(--accent-soft);border-left:3px solid var(--accent);
+border-radius:0 8px 8px 0;color:var(--t2);font-size:14px}
+blockquote p{margin:4px 0}
+code{background:#11161C;border:1px solid var(--line);border-radius:4px;padding:1px 6px;
+font-family:"JetBrains Mono",Consolas,monospace;font-size:12.8px;color:var(--code)}
+pre{background:#11161C;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;
+font-size:12.8px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+pre code{background:none;border:0;padding:0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.8px;background:var(--card);
+border-radius:10px;overflow:hidden;display:table}
+th{background:#1F252D;color:var(--t1);text-align:left;font-weight:700;padding:9px 12px;
+font-size:13px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid #20262E;vertical-align:top}
+td:first-child{width:1%;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#1C2128}
+ul,ol{padding-left:22px;margin:10px 0}
+li{margin:5px 0}
+li input[type=checkbox]{margin-right:7px;accent-color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:38px 0}
+em{color:var(--t3);font-style:normal;font-size:13.5px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0}
+.pill{background:#1D232B;border:1px solid var(--line);border-radius:20px;padding:4px 13px;
+font-size:12.5px;color:var(--t2)}
+.pill.hot{background:var(--accent-soft);border-color:rgba(255,122,26,.4);color:var(--accent);font-weight:700}
+@media(max-width:700px){
+  .page{padding:26px 15px 70px}
+  h1{font-size:22px}
+  h2{font-size:18px}
+  table{font-size:12.5px;table-layout:auto}
+  th,td{padding:7px 8px}
+  /* 首列是短标签，给个最小宽度避免被压成竖排；其余交给浏览器 */
+  td:first-child{width:auto!important;white-space:nowrap!important;min-width:5.2em}
+  td{word-break:break-word}
+  td code{white-space:normal;word-break:break-all}
+}
+
+li:has(>input[type=checkbox]){list-style:none;margin-left:-20px}
+input[type=checkbox]{appearance:none;width:14px;height:14px;border:1.5px solid #3A424D;
+border-radius:3px;vertical-align:-2px;margin-right:8px;background:#141A20}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>车机网络收音机 · 功能需求文档</h1>
+<blockquote>
+<p>用途：交付给第三方开发者作为<strong>重新开发</strong>的依据。
+本文只写「要什么功能、什么规则、怎么算做对」，不规定技术实现、不附源码。
+唯一约束：目标设备的系统能力（见第 1 节），实现方式自选。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>对应产品版本</td>
+<td>星愿收音机 v1.5.1</td>
+</tr>
+<tr>
+<td>编制日期</td>
+<td>2026-10-23</td>
+</tr>
+<tr>
+<td>目标设备</td>
+<td>吉利银河 E22H__5 IHU801G 车机（Android 9 / API 28，1920×1080 横屏）</td>
+</tr>
+<tr>
+<td>数据来源</td>
+<td>央广网 <code>radio.cn</code> 公开接口（与云听同源）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>0. 一句话需求</h2>
+<p>做一个<strong>装在车机上、能用方向盘按键控制的网络收音机</strong>：无广告、无登录、无开屏，打开就出声；按所在地自动列出当地电台（四川优先）；关掉界面切到导航，音频和方向盘都还在；下次开车回到上次那个台。</p>
+<hr />
+<h2>1. 运行环境与硬约束</h2>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统</td>
+<td>Android 9.0 / API 28</td>
+<td><code>minSdk 28</code>、<code>targetSdk 28</code></td>
+</tr>
+<tr>
+<td>屏幕</td>
+<td>1920×1080 横屏，密度 2x（≈960×540dp）</td>
+<td>UI 以横屏两栏为基准设计</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>ECARX 8 核，arm64-v8a</td>
+<td>兼容 v7a；<strong>不得依赖仅 arm64 的 native 库</strong></td>
+</tr>
+<tr>
+<td>内存</td>
+<td>物理 5.69G + 虚拟 2G</td>
+<td>常规占用即可，无特殊限制</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>车机 4G 热点</td>
+<td>必须能容忍弱网、断网、切换网络</td>
+</tr>
+<tr>
+<td>输入</td>
+<td>触摸屏 + 方向盘按键 + （可选）旋钮</td>
+<td>方向盘按键是硬需求</td>
+</tr>
+<tr>
+<td>调试</td>
+<td><strong>无 USB 调试条件</strong></td>
+<td>日志必须在应用内可视，不能只输出到 logcat</td>
+</tr>
+</tbody>
+</table>
+<p><strong>硬约束：</strong></p>
+<ol>
+<li><strong>零第三方运行时依赖</strong>优先。若引入播放器/网络库，需说明体积与许可证。</li>
+<li><strong>不得内置任何广告 SDK、统计 SDK、推送 SDK</strong>。</li>
+<li><strong>不得内置任何音频内容</strong>，所有音频实时从公开接口拉取，不下载不转存。</li>
+<li>安装包体积目标 <strong>≤ 1 MB</strong>（参考实现为 76 KB）。</li>
+</ol>
+<hr />
+<h2>2. 功能清单（总览）</h2>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>功能</th>
+<th>优先级</th>
+<th>验收要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>自动定位并列出当地电台</td>
+<td>P0</td>
+<td>首次打开即显示本省台，无需任何设置</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>电台列表排序（四川优先）</td>
+<td>P0</td>
+<td>本省台在最前，国家台在最后</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>播放 / 暂停 / 上一台 / 下一台</td>
+<td>P0</td>
+<td>单击即生效，不得需要点两次</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>音频流播放与自动降级</td>
+<td>P0</td>
+<td>单台故障不导致整体不可用</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>方向盘按键控制</td>
+<td>P0</td>
+<td>上一曲/下一曲/播放暂停均生效</td>
+</tr>
+<tr>
+<td>F6</td>
+<td>车机媒体中心显示播控状态</td>
+<td>P0</td>
+<td>左下媒体区显示台名与状态，可被系统识别</td>
+</tr>
+<tr>
+<td>F7</td>
+<td>播放区信息展示（台标/台名/时段/时间轴）</td>
+<td>P1</td>
+<td>信息与实际播放一致</td>
+</tr>
+<tr>
+<td>F8</td>
+<td>收藏列表</td>
+<td>P1</td>
+<td>可切换查看，独立于全部电台</td>
+</tr>
+<tr>
+<td>F9</td>
+<td>隐藏电台</td>
+<td>P1</td>
+<td>隐藏后不显示且不会被切到</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>开机续播（文件夹 + 电台成对恢复）</td>
+<td>P0</td>
+<td>退出重进回到原处，不跳回第一台</td>
+</tr>
+<tr>
+<td>F11</td>
+<td>省份/地区切换</td>
+<td>P0</td>
+<td>可手动切换任意省级行政区</td>
+</tr>
+<tr>
+<td>F12</td>
+<td>手势换台（上半区左右滑）</td>
+<td>P2</td>
+<td>不误触发，与列表滚动不冲突</td>
+</tr>
+<tr>
+<td>F13</td>
+<td>手机适配（同一 APK）</td>
+<td>P2</td>
+<td>手机上可用，非必须</td>
+</tr>
+<tr>
+<td>F14</td>
+<td>应用内诊断日志</td>
+<td>P1</td>
+<td>无 USB 环境下可自查问题</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. 功能详细规格</h2>
+<h3>F1 · 自动定位并列出当地电台</h3>
+<p><strong>行为</strong></p>
+<ol>
+<li>首次启动（无历史记录）时，通过<strong>公网出口 IP</strong> 判断所在省级行政区。</li>
+<li>拿到省份后，拉取该省电台列表并渲染。</li>
+<li>定位<strong>超时 4 秒</strong>必须放弃，回落默认省份（四川），不得让界面空等。</li>
+<li>定位失败、接口失败、无网络，一律回落默认省份，并<strong>照常显示可用列表</strong>。</li>
+</ol>
+<p><strong>规则</strong></p>
+<ul>
+<li>只取到<strong>省级</strong>粒度，城市名仅用于界面显示，不参与筛选。</li>
+<li>定位得到的省份<strong>不写入"用户手选"标记</strong>（见 F10），下次启动可重新定位。</li>
+<li>提供<strong>内置省份清单</strong>作为兜底：接口拿不到省份列表时，用内置的 34 个省级行政区 + 国家台渲染下拉框。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 全新安装、有网 → 3 秒内出现本省电台列表</li>
+<li><input type="checkbox" disabled> 断网启动 → 不白屏、不崩溃，显示默认省份列表或明确的空态提示</li>
+<li><input type="checkbox" disabled> 定位接口超时 → 4 秒后自动回落，无用户等待</li>
+</ul>
+<hr />
+<h3>F2 · 电台列表排序</h3>
+<p><strong>规则（三档排序，档内保持接口返回顺序）</strong></p>
+<table>
+<thead>
+<tr>
+<th>档位</th>
+<th>判定条件</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一档</td>
+<td>台名以<strong>本省省名开头</strong>，且不含城市名</td>
+<td>四川交通广播、四川新闻广播</td>
+</tr>
+<tr>
+<td>二档</td>
+<td>台名含省名或城市名（排除国家级）</td>
+<td>中国交通广播（四川）、成都经济广播</td>
+</tr>
+<tr>
+<td>三档</td>
+<td>其余</td>
+<td>中国之声、经济之声等国家台</td>
+</tr>
+</tbody>
+</table>
+<p>省级下拉框顺序：<strong>四川 → 重庆 → 云南 → 贵州 → 其它</strong>（可按客户要求调整）。</p>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 四川列表首屏前 5 台全部是「四川 XX」开头</li>
+<li><input type="checkbox" disabled> 国家台排在本省台之后</li>
+</ul>
+<hr />
+<h3>F3 · 播放控制</h3>
+<p><strong>必须提供的操作</strong></p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>触摸</th>
+<th>手势</th>
+<th>方向盘</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>播放 / 暂停</td>
+<td>中央大按钮</td>
+<td>—</td>
+<td>播放暂停键</td>
+</tr>
+<tr>
+<td>上一台</td>
+<td>左按钮</td>
+<td>右滑或下滑</td>
+<td>上一曲</td>
+</tr>
+<tr>
+<td>下一台</td>
+<td>右按钮</td>
+<td>左滑或上滑</td>
+<td>下一曲</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键规则</strong></p>
+<ol>
+<li><strong>单击必须生效</strong>，不允许「第一次点击只移光标、第二次才触发」。
+   - 常见坑：控件设了 <code>focusableInTouchMode=true</code> 后，触屏第一次点击只获取焦点。<strong>不要设</strong>。</li>
+<li>切台走<strong>播放队列</strong>，不走屏幕可见列表：
+   - 队列包含被隐藏的台？→ <strong>不包含</strong>。隐藏必须同步移出队列，否则方向盘会切到看不见的台。
+   - 收藏视图下切台，队列 = 收藏列表。
+   - 队列<strong>循环</strong>：最后一台下一台回到第一台。</li>
+<li>任一操作后，<strong>列表高亮必须与正在播放的台一致</strong>（见 F7 的"列表跟随"）。</li>
+</ol>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 三个按钮各单击一次即响应（不是两次）</li>
+<li><input type="checkbox" disabled> 连按「下一台」15 次，切到的台与高亮行始终一致</li>
+<li><input type="checkbox" disabled> 在收藏视图切台，只在收藏范围内循环</li>
+</ul>
+<hr />
+<h3>F4 · 音频流播放与降级</h3>
+<p><strong>地址获取</strong></p>
+<ul>
+<li>播放地址由接口返回，带<strong>签名参数</strong>，会随时间变化。</li>
+<li><strong>不得持久写死</strong>完整地址；应当播放时重新申请，或做有时限的本地缓存。</li>
+<li>单台通常返回 4 个候选地址，优先级：<strong>多码率流 → MP3 低码率 → MP3 高码率 → HLS</strong>。</li>
+</ul>
+<p><strong>降级链（必须实现）</strong></p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>触发条件</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>播放开始</td>
+<td>用<strong>缓存地址</strong>（30 分钟内）秒开，不等待网络</td>
+</tr>
+<tr>
+<td>2</td>
+<td>播放失败</td>
+<td>依次换下一个候选地址，单台最多重试 <strong>2 次</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>候选耗尽</td>
+<td>重新向接口申请该台的最新地址，再试一次</td>
+</tr>
+<tr>
+<td>4</td>
+<td>仍失败</td>
+<td>提示「该台暂时无法播放」，<strong>只影响这一台</strong>，不整体报错</td>
+</tr>
+</tbody>
+</table>
+<p><strong>复用规则</strong></p>
+<ul>
+<li>地址缓存有效期：<strong>30 分钟内视为新鲜</strong>，直接复用；<strong>6 小时后过期</strong>，必须重新申请。</li>
+<li>中途失败则强制刷新，不许一直用坏地址。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 断网播放 → 提示明确，界面不卡死</li>
+<li><input type="checkbox" disabled> 手动把缓存地址改成错误值 → 自动降级到下一候选并恢复播放</li>
+<li><input type="checkbox" disabled> 单台故障时，切换到其它台仍正常</li>
+</ul>
+<hr />
+<h3>F5 · 方向盘按键控制</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>按键</td>
+<td>上一曲 / 下一曲 / 播放暂停（media button）</td>
+</tr>
+<tr>
+<td>到达路径</td>
+<td>① MediaSession 回调（主）② MediaButtonReceiver 广播（备）③ 通知栏动作（备）</td>
+</tr>
+<tr>
+<td>前提</td>
+<td><strong>播放器必须活在常驻服务里</strong>，不能绑在界面上</td>
+</tr>
+<tr>
+<td>响应</td>
+<td>按键后 500ms 内状态变化</td>
+</tr>
+</tbody>
+</table>
+<p><strong>规则</strong></p>
+<ul>
+<li>界面关闭、切到导航、锁屏，按键<strong>仍然生效</strong>。</li>
+<li>部分车机固件只在<strong>开机时扫描一次</strong>媒体源，所以需要开机自启，让媒体会话尽早存在。</li>
+<li>若车机厂商固件根本不派发按键事件，需如实标注为「设备限制」，不可虚报支持。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 按 Home 键退出应用后，方向盘按键仍能切台</li>
+<li><input type="checkbox" disabled> 车机左下媒体区显示本应用，且台名/状态随播放变化</li>
+</ul>
+<hr />
+<h3>F6 · 车机媒体中心集成</h3>
+<p><strong>必须提供</strong></p>
+<ul>
+<li>前台服务常驻 + MediaSession，提供：台名、副标题（如「正在直播」）、台标图、播放状态。</li>
+<li>通知栏：台标 + 台名 + 播放暂停 / 上一台 / 下一台。</li>
+<li>台标同时写入媒体元数据，供锁屏、蓝牙车机、通知栏大图读取。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 车机左下媒体播放区出现本应用条目</li>
+<li><input type="checkbox" disabled> 台名随切台更新（不是固定文案）</li>
+<li><input type="checkbox" disabled> 通知栏三个按钮可用</li>
+</ul>
+<hr />
+<h3>F7 · 播放区信息展示与列表跟随</h3>
+<p><strong>播放区必须显示的 5 个元素</strong></p>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>圆形台标</td>
+<td>官方台标图，<strong>方形图裁成圆形铺满</strong>；长条形台标完整显示、不裁切不拉伸、留白；无图时回落台名字标，不空白</td>
+</tr>
+<tr>
+<td>台名</td>
+<td>大字号，可两行</td>
+</tr>
+<tr>
+<td>直播状态</td>
+<td>「● 正在直播」，暂停时显示灰色「‖ 已暂停」</td>
+</tr>
+<tr>
+<td>节目时段</td>
+<td>显示当前时段名称与起止时间（如「00:00–24:00」）</td>
+</tr>
+<tr>
+<td>时间轴</td>
+<td>进度条 + 时间码（当前时间 / 总时长）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>列表跟随规则（重要）</strong></p>
+<ol>
+<li>界面行号 <strong>≠</strong> 播放队列下标（有隐藏台、有收藏视图），必须按<strong>电台唯一 ID</strong> 换算。</li>
+<li>切台后，若目标行<strong>在可见区域内 → 不动</strong>（用户可能正在翻别的台看）。</li>
+<li>目标行<strong>不可见 → 滚动到该行</strong>，上方留 1~3 行余量，不贴屏幕边缘。</li>
+<li>滚动必须在<strong>列表数据刷新之后</strong>执行，否则会被随后的一次重新布局冲掉（常见 bug）。</li>
+</ol>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 连按下一台 12 次，高亮行始终可见（会翻页）</li>
+<li><input type="checkbox" disabled> 往回切时列表跟回来</li>
+<li><input type="checkbox" disabled> 隐藏 2 个台后，高亮与实际播放台不错位</li>
+</ul>
+<hr />
+<h3>F8 · 收藏列表</h3>
+<ul>
+<li>每行一个「☆/★」按钮，点击加入/移出收藏，<strong>星标状态即时切换</strong>。</li>
+<li>顶部 Tab 切换「全部电台 / 收藏」，两个列表独立。</li>
+<li>收藏与隐藏是<strong>两套独立数据</strong>，互不影响。</li>
+<li>收藏为空时显示引导文案（如「点列表右侧 ☆ 添加」）。</li>
+<li>收藏列表<strong>持久化</strong>，重启后保留。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 收藏后切到收藏 Tab 可见该台</li>
+<li><input type="checkbox" disabled> 重启应用收藏仍在</li>
+<li><input type="checkbox" disabled> 取消收藏后从收藏 Tab 消失，但仍在全部电台中</li>
+</ul>
+<hr />
+<h3>F9 · 隐藏电台</h3>
+<ul>
+<li>每行一个「⊘」按钮，点击隐藏（可恢复）。</li>
+<li>隐藏后<strong>立即从全部电台与收藏列表中移除</strong>。</li>
+<li>隐藏台<strong>同步移出播放队列</strong>，方向盘不会切到。</li>
+<li>隐藏状态持久化；提供「恢复」入口。</li>
+<li>全部台都被隐藏时，<strong>完整保留列表</strong>而不是显示空白，避免用户无法操作。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 隐藏当前正在播的台 → 自动切到下一台</li>
+<li><input type="checkbox" disabled> 隐藏后方向盘连按，不会切到被隐藏的台</li>
+<li><input type="checkbox" disabled> 可以从恢复入口找回</li>
+</ul>
+<hr />
+<h3>F10 · 开机续播（核心难点）</h3>
+<p><strong>必须记住的字段</strong></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>contentId</code></td>
+<td>电台唯一 ID，<strong>主要依据</strong>（列表增删也不错位）</td>
+</tr>
+<tr>
+<td><code>index</code></td>
+<td>下标，<strong>兜底</strong>（万一该台被下架）</td>
+</tr>
+<tr>
+<td>省份编码 / 名称</td>
+<td>上次在哪个「文件夹」</td>
+</tr>
+<tr>
+<td>是否在播</td>
+<td>退出时是播放还是暂停</td>
+</tr>
+<tr>
+<td><strong>省份是否用户手选</strong></td>
+<td>决定下次启动要不要强制恢复该省份</td>
+</tr>
+<tr>
+<td>当前视图</td>
+<td>全部 / 收藏</td>
+</tr>
+<tr>
+<td>隐藏清单、收藏清单</td>
+<td>独立存储</td>
+</tr>
+</tbody>
+</table>
+<p><strong>规则</strong></p>
+<ol>
+<li><strong>省份与电台必须成对恢复</strong>。只恢复电台不恢复省份 → 出现「记的是 A 省的台，列表却是 B 省」，等于没恢复。</li>
+<li><strong>区分「用户手选」与「定位推出」</strong>：
+   - 用户手动选过省份 → 下次启动<strong>强制恢复</strong>该省份，不跟随定位。
+   - 从未手选（全靠定位）→ 下次启动<strong>允许跟随定位</strong>，自动切到当地。</li>
+<li><strong>恢复只消费一次</strong>，且要防止重复请求导致状态被冲掉。
+   - 典型 bug：切到第 5 台，退出重进却回到第 1 台 —— 多因恢复逻辑被调用两次或与初始化请求竞争。</li>
+<li><strong>不存播放 URL</strong>。地址带签名，存下来必然失效，必须播放时重新申请。</li>
+</ol>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 切到第 5 台 → 退出 → 重进 → 仍是第 5 台且列表在第 5 行</li>
+<li><input type="checkbox" disabled> 手动切到重庆 → 退出 → 重进 → 仍是重庆</li>
+<li><input type="checkbox" disabled> 从未手选省份 → 换城市后重进 → 跟随新城市</li>
+</ul>
+<hr />
+<h3>F11 · 地区切换</h3>
+<ul>
+<li>顶栏一个省份下拉，列出 34 个省级行政区 + 国家台。</li>
+<li>切换后立即拉取该省列表并重建队列。</li>
+<li>切换省份记为「用户手选」（影响 F10）。</li>
+<li>顶栏省份文字需限制最大宽度，过长截断，不得挤掉其它控件。</li>
+</ul>
+<hr />
+<h3>F12 · 手势换台</h3>
+<ul>
+<li><strong>区域</strong>：仅播放区（上半区），列表区不响应（否则与滚动冲突）。</li>
+<li><strong>判定</strong>：位移超过阈值才触发。上滑/左滑 = 下一台，下滑/右滑 = 上一台。</li>
+<li><strong>阈值</strong>：车机 90dp，手机 48dp（可调）。</li>
+<li><strong>事件模式</strong>：监听但不拦截，正常分发不受影响。</li>
+</ul>
+<p><strong>验收</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 左滑换下一台，右滑换上一台</li>
+<li><input type="checkbox" disabled> 列表区上下滑动只会滚动列表，不会换台</li>
+<li><input type="checkbox" disabled> 轻微误触不换台</li>
+</ul>
+<hr />
+<h3>F13 · 手机适配（P2，可选）</h3>
+<p>同一 APK 兼容手机，判据建议：</p>
+<pre><code>两栏布局 = 宽 ≥ 高 且 高 ≥ 520dp
+紧凑尺寸 = 短边 &lt; 600dp 且（高度 &lt; 520dp 或 宽 &lt; 高 × 1.2）
+</code></pre>
+<ul>
+<li>车机 960×540dp → 两栏 + 原尺寸（保持 28sp 车规大字号）</li>
+<li>手机竖屏 → 单列 + 紧凑</li>
+<li>手机横屏（如 780×360dp）→ 单列（高度不够两栏）</li>
+</ul>
+<p><strong>注意</strong>：判据<strong>必须同时看高度和宽高比</strong>。只判短边会把车机（短边 540dp）误判成手机，把车规字号缩小。</p>
+<hr />
+<h3>F14 · 应用内诊断日志</h3>
+<p>车机无 USB 调试，日志必须能在界面上看到：</p>
+<ul>
+<li>保留最近 <strong>500 条</strong>环形缓冲，带时间戳与分类标签（网络 / 播放 / 界面 / 列表）。</li>
+<li>界面提供入口查看、复制、清空。</li>
+<li>关键节点必须打日志：定位结果、接口请求与失败原因、地址切换、降级动作、恢复快照、切台与滚动目标行。</li>
+</ul>
+<hr />
+<h2>4. 界面要求</h2>
+<p><strong>车机横屏两栏</strong>（左侧控制、右侧列表）</p>
+<pre><code>┌──────────────────────────────────────────────────────────┐
+│  FM    正在直播提示                         [地区 ▾]     │
+├────────────────────────────┬─────────────────────────────┤
+│   ┌──────────┐             │  全部电台 │ 收藏            │
+│   │  圆形    │  四川交通广播 │ ─────────────────────────── │
+│   │  台标    │  ● 正在直播   │  四川交通广播      ★   ⊘   │
+│   └──────────┘  07:00-09:00 │  四川新闻广播      ★   ⊘   │
+│   进度条  07:12 / 09:00    │  成都经济广播      ★   ⊘   │
+│                            │  中国之声          ★   ⊘   │
+│  ┌────┐ ┌────────┐ ┌────┐ │                             │
+│  │上一│ │  暂停  │ │下一│ │                             │
+│  └────┘ └────────┘ └────┘ │                             │
+└────────────────────────────┴─────────────────────────────┘
+</code></pre>
+<p><strong>尺寸基线（1920×1080 @2x，可按比例调整）</strong></p>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>尺寸</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>台名</td>
+<td>≥ 40sp</td>
+</tr>
+<tr>
+<td>列表台名</td>
+<td>≥ 18sp</td>
+</tr>
+<tr>
+<td>控制按钮高度</td>
+<td>≥ 92dp</td>
+</tr>
+<tr>
+<td>列表行高</td>
+<td>≥ 72dp</td>
+</tr>
+<tr>
+<td>列表可见行数</td>
+<td>≥ 5 行</td>
+</tr>
+<tr>
+<td>圆形台标</td>
+<td>≥ 110dp，占卡片高度约 1/3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>视觉</strong>：深色主题，单色强调色（参考橙色），大字号优先于信息密度。</p>
+<hr />
+<h2>5. 数据接口要求</h2>
+<table>
+<thead>
+<tr>
+<th>数据</th>
+<th>用途</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>省级行政区列表</td>
+<td>地区下拉</td>
+<td>一次请求，可缓存</td>
+</tr>
+<tr>
+<td>某省电台列表</td>
+<td>列表 + 播放地址</td>
+<td>每台含 4 个播放地址</td>
+</tr>
+<tr>
+<td>电台台标图</td>
+<td>界面显示</td>
+<td>通常 400×400，本地缓存，断网可用</td>
+</tr>
+<tr>
+<td>IP 归属地</td>
+<td>自动定位</td>
+<td>只需省级 + 城市名，4 秒超时</td>
+</tr>
+<tr>
+<td>节目时段</td>
+<td>时间轴</td>
+<td>无则显示「00:00-24:00」占位</td>
+</tr>
+</tbody>
+</table>
+<p><strong>接口约束</strong></p>
+<blockquote>
+<p>📎 完整字段说明、签名算法、错误码、地址有效期实测见单独文档 <strong><code>接口字段说明.md</code> / <code>.html</code></strong>。</p>
+</blockquote>
+<ul>
+<li>接口为公开接口，<strong>不得绕过鉴权、不得逆向私有接口</strong>。</li>
+<li>接口可能变更；需具备<strong>后台可切换基地址</strong>的能力，避免一次变更导致整体不可用。</li>
+<li>请求需带固定请求头（<code>equipmentId</code>、<code>platformCode</code>），具体值以官方网页端为准。</li>
+</ul>
+<p><strong>合规边界（必须遵守）</strong></p>
+<ol>
+<li>只读取公开接口，不下载、不转存、不分发音频内容。</li>
+<li>不复用原厂 App 的任何代码、图标、字体、私有接口。</li>
+<li>不做付费内容/会员功能。</li>
+<li>不采集任何个人信息，IP 仅用于省份判断且不上报。</li>
+</ol>
+<hr />
+<h2>6. 异常与降级汇总</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>期望行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IP 定位失败/超时</td>
+<td>回落默认省份，不弹错误、不阻塞</td>
+</tr>
+<tr>
+<td>省份列表接口挂了</td>
+<td>用内置省份清单（34 个 + 国家台）</td>
+</tr>
+<tr>
+<td>电台列表为空</td>
+<td>显示空态文案，保留操作入口</td>
+</tr>
+<tr>
+<td>播放地址 403/过期</td>
+<td>重新申请后重试；仍失败则提示</td>
+</tr>
+<tr>
+<td>断网</td>
+<td>可用缓存地址继续播放已有音频；列表显示离线提示</td>
+</tr>
+<tr>
+<td>台标图下载失败</td>
+<td>回落为台名文字标</td>
+</tr>
+<tr>
+<td>服务被系统回收</td>
+<td>通过 <code>START_STICKY</code> 自动重建，恢复播放状态</td>
+</tr>
+<tr>
+<td>所有电台被隐藏</td>
+<td>完整保留列表，避免白屏</td>
+</tr>
+<tr>
+<td>收藏列表为空</td>
+<td>显示引导文案</td>
+</tr>
+<tr>
+<td>来电 / 导航播报</td>
+<td>自动压低或暂停，结束后恢复</td>
+</tr>
+<tr>
+<td>网络切换（4G ↔ WiFi）</td>
+<td>自动续播，不出现长时间静音无响应</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. 验收清单</h2>
+<p><strong>功能（必须全部通过）</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 全新安装 → 自动显示本省电台</li>
+<li><input type="checkbox" disabled> 三个控制按钮单击即生效</li>
+<li><input type="checkbox" disabled> 方向盘上一曲/下一曲/暂停均生效（需实车）</li>
+<li><input type="checkbox" disabled> 车机左下媒体区显示本应用与台名</li>
+<li><input type="checkbox" disabled> 连按下一台 12 次，列表跟随翻页且高亮正确</li>
+<li><input type="checkbox" disabled> 收藏 → 切换 Tab 可见 → 重启后仍在</li>
+<li><input type="checkbox" disabled> 隐藏 → 从列表与队列同时消失 → 可恢复</li>
+<li><input type="checkbox" disabled> 切到第 N 台 → 退出 → 重进 → 回到第 N 台</li>
+<li><input type="checkbox" disabled> 手动切换省份 → 重进后仍是该省</li>
+<li><input type="checkbox" disabled> 断网 → 不崩溃、有明确提示</li>
+</ul>
+<p><strong>非功能</strong></p>
+<ul>
+<li><input type="checkbox" disabled> 冷启动到可操作 ≤ 2 秒</li>
+<li><input type="checkbox" disabled> 安装包 ≤ 1 MB（推荐目标，非硬性）</li>
+<li><input type="checkbox" disabled> 常驻内存 ≤ 100 MB</li>
+<li><input type="checkbox" disabled> 连续播放 4 小时无内存增长、无 ANR</li>
+<li><input type="checkbox" disabled> 无任何广告/统计 SDK（可通过反编译或依赖清单核验）</li>
+</ul>
+<hr />
+<h2>8. 交付物要求</h2>
+<ol>
+<li>可安装 APK（签名，Android 9 可用）</li>
+<li>源码仓库（含构建说明，可一键出包）</li>
+<li>单元测试（至少覆盖：排序规则、队列下标 ↔ 界面行号换算、恢复逻辑、地址降级）</li>
+<li>功能说明文档（面向使用者，非开发者）</li>
+<li>已知限制清单（如实标注未验证项，例如方向盘按键是否依赖特定固件）</li>
+</ol>
+<hr />
+<h2>9. 开发优先级建议</h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>第 1 阶段</td>
+<td>F1 + F2 + F3 + F4</td>
+<td>能定位、能出列表、能播能切，最小可用</td>
+</tr>
+<tr>
+<td>第 2 阶段</td>
+<td>F5 + F6 + F10</td>
+<td>方向盘、媒体中心、续播，这三项决定"能不能当车机收音机用"</td>
+</tr>
+<tr>
+<td>第 3 阶段</td>
+<td>F7 + F8 + F9 + F11</td>
+<td>体验补齐：信息展示、收藏、隐藏、地区切换</td>
+</tr>
+<tr>
+<td>第 4 阶段</td>
+<td>F12 + F13 + F14</td>
+<td>手势、手机适配、诊断日志</td>
+</tr>
+</tbody>
+</table>
+<p><strong>最容易翻车的三处（提前提醒开发方）</strong></p>
+<ol>
+<li><strong>F3 单击不生效</strong> —— 触屏焦点坑，几乎每个车机项目都会踩。</li>
+<li><strong>F7 列表不跟随</strong> —— 行号算错 + 滚动被重新布局冲掉，两个原因叠加。</li>
+<li><strong>F10 回到第一个台</strong> —— 恢复逻辑执行两次或与初始化请求竞争。</li>
+</ol>
+<hr />
+<p><em>本文档描述的是功能需求，不含实现代码。接口细节以央广 <code>radio.cn</code> 网页端公开接口为准，若有变更以实际为准。</em></p>
+</div>
+</body>
+</html>

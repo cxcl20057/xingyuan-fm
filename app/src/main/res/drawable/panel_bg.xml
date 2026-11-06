@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  卡片底（v2.0 浅色）：纯白 + 20dp 圆角。
+
+  用途：车机左栏播放卡、右栏列表容器、手机底部播放条。
+  白卡浮在 @color/bg（#F4F5F7）上，靠明度差分层，不加阴影 ——
+  车机屏幕反光，阴影在这种环境里几乎看不见，反而会把边缘弄脏。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/panel" />
+    <corners android:radius="20dp" />
+</shape>

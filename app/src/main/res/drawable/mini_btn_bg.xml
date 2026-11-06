@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  手机播放条上的圆形图标按钮（上一台 / 下一台 / 收藏）。
+
+  浅灰圆底：手机上纯图标在白色播放条上边界不清，看不出"这是个能点的东西"；
+  加一层很淡的灰底就解决了，且不会抢主播放键的视线。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/surface_pressed" />
+        </shape>
+    </item>
+
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/panel" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/surface_muted" />
+        </shape>
+    </item>
+</selector>

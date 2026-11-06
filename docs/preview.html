@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>星愿收音机 v1.5.1 · 车机与手机界面预览</title>
+<style>
+  :root{
+    --bg:#0E1013; --panel:#15181D; --accent:#FF7A18;
+    --t1:#fff; --t2:#9BA3AF; --t3:#5F6875; --item:#C8CFD8; --itemsub:#6B7480;
+    --sel:#22272E; --onlight:#0E1013;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#05070a;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;min-height:100vh;color:var(--t1);gap:12px;padding:20px;
+    font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  /* 舞台按 1920×1080 设计等比缩放；内部用 vw 换算，保证与真机比例一致 */
+  .stage{width:100%;max-width:1360px;aspect-ratio:16/9}
+  .bezel{
+    width:100%;height:100%;position:relative;background:var(--bg);border-radius:14px;
+    overflow:hidden;display:flex;box-shadow:0 24px 70px rgba(0,0,0,.85),0 0 0 1px #1e242c;
+  }
+  /* ---- 左 46% ---- */
+  .left{
+    width:46%;background:var(--panel);display:flex;flex-direction:column;
+    align-items:center;padding:1.4% 2% 1.6%;text-align:center;
+    /* 滑动手势区：禁止拖选文字/拖动图片，否则会把鼠标手势吃掉 */
+    user-select:none;-webkit-user-select:none;touch-action:pan-y;
+  }
+  .left img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+  .kicker{color:var(--accent);font-size:1.05vw;font-weight:700;letter-spacing:.3em}
+  .spacer{flex:1}
+  .logo{
+    width:6.9vw;height:6.9vw;border-radius:50%;background:#F2F4F7;flex:none;
+    border:.16vw solid var(--accent);display:flex;align-items:center;justify-content:center;
+    color:var(--onlight);font-size:3.3vw;font-weight:700;overflow:hidden;position:relative;
+  }
+  /* 官方台标多为横向长条（如 101.7 FM 组合标 400×120），必须 contain 完整显示、不裁剪 */
+  /* 方图裁成圆铺满（不留白边），长条标完整显示（不切两端），与 App 的 applyScaleType 一致 */
+  .logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .logo img.wide{object-fit:contain;inset:6%;width:88%;height:88%}
+  .logo img[hidden]{display:none}
+  .station{margin-top:.6vw;font-size:2.1vw;font-weight:700;line-height:1.2}
+  .live{margin-top:.35vw;font-size:1vw;font-weight:700;color:var(--accent)}
+  .live.paused{color:var(--t2)}
+  .period{margin-top:.1vw;font-size:.9vw;color:var(--t2)}
+  .subtitle{margin-top:.1vw;font-size:.85vw;color:var(--t3)}
+  .timeline{width:100%;margin-top:.6vw}
+  .tl-head{display:flex;align-items:center;justify-content:space-between;font-size:.75vw;color:var(--t3)}
+  .tl-head span:first-child{flex:1;text-align:left}
+  .tl-head span:last-child{flex:1;text-align:right}
+  .chip{background:#F2F4F7;color:var(--onlight);border-radius:.6vw;padding:.12vw .55vw;font-weight:700}
+  .bar{height:.32vw;background:#2A3038;border-radius:.2vw;margin-top:.25vw;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:.2vw;transition:width 1s linear}
+  .status{margin-top:.5vw;font-size:.95vw;font-weight:700;color:var(--accent)}
+  .ctrls{display:flex;width:100%;gap:.7vw;height:4.8vw}
+  button{
+    flex:1;border:0;border-radius:.7vw;background:#232830;color:#fff;
+    font-size:1.35vw;font-weight:700;font-family:inherit;cursor:pointer;
+  }
+  button.primary{flex:1.25;background:var(--accent);font-size:1.45vw}
+  /* 鼠标点击后不留白色描边；键盘 Tab 仍给焦点框（会话里偶尔会有焦点残留） */
+  button:focus:not(:focus-visible){outline:none;box-shadow:none}
+  /* ---- 右 54% ---- */
+  .right{width:54%;display:flex;flex-direction:column;padding:1.3% 1.6% 1.3% 1%}
+  .topbar{display:flex;align-items:center;gap:.6vw}
+  .hint{flex:1;font-size:.78vw;color:var(--t3);line-height:1.3}
+  .pill{
+    background:#1B1F25;border:.1vw solid transparent;border-radius:1.2vw;
+    padding:.5vw 1vw;font-size:.95vw;font-family:inherit;color:var(--t1);cursor:pointer;white-space:nowrap;
+  }
+  .pill:hover{border-color:var(--accent);background:#2C333C}
+  .pill.small{font-size:.78vw;color:var(--t2)}
+  .tabs{display:flex;gap:.5vw;margin-top:.6vw}
+  .tab{
+    flex:1;height:2.7vw;display:flex;align-items:center;justify-content:center;border-radius:.6vw;
+    font-size:1.15vw;font-weight:700;color:var(--t2);background:#1B1F25;cursor:pointer;
+  }
+  .tab.on{background:var(--accent);color:#fff}
+  .list{margin-top:.6vw;overflow-y:auto;flex:1;scrollbar-width:none}
+  .list::-webkit-scrollbar{display:none}
+  .row{
+    height:5vw;display:flex;align-items:center;padding:0 .9vw;border-radius:.6vw;
+    cursor:pointer;border:.1vw solid transparent;
+  }
+  .row .no{width:2.4vw;text-align:right;color:var(--t3);font-size:1vw;flex:none}
+  .row .txt{margin-left:.8vw;overflow:hidden}
+  .row .title{font-size:1.45vw;color:var(--item);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+  .row .sub{font-size:1vw;color:var(--itemsub);line-height:1.2}
+  .row .star,.row .hide{
+    width:2.2vw;align-self:stretch;display:flex;align-items:center;justify-content:center;
+    font-size:1.4vw;color:var(--t3);flex:none;
+  }
+  .row .star.fav{color:var(--accent)}
+  .row .hide:hover{color:var(--accent)}
+  .row.active{background:var(--sel)}
+  .row.active .title{color:#fff}
+  .row.active .no,.row.active .sub{color:var(--accent)}
+  .row:hover{border-color:var(--accent);background:#2C333C}
+  /* 诊断抽屉 */
+  .drawer{
+    position:absolute;inset:0;background:rgba(0,0,0,.78);display:none;
+    align-items:center;justify-content:center;z-index:20;
+  }
+  .drawer.show{display:flex}
+  .panel{
+    width:78%;max-height:84%;background:#15181D;border-radius:.8vw;padding:1.4vw;
+    display:flex;flex-direction:column;gap:.7vw;border:.1vw solid #2A3038;
+  }
+  .panel h3{font-size:1.1vw;color:var(--t2);font-weight:600}
+  .check{font-size:.82vw;color:#B0B8C4;line-height:1.75}
+  .check b{color:var(--accent)}
+  .logs{
+    flex:1;min-height:8vw;overflow-y:auto;font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:.72vw;line-height:1.7;background:#0B0D10;border-radius:.4vw;padding:.8vw;color:#8B949E;
+  }
+  .logs .k{color:#4FC3F7}.logs .w{color:#FFB74D}.logs .e{color:#FF6B6B}
+  .panel .close{align-self:flex-end;font-size:.85vw;padding:.4vw 1vw;flex:none;height:auto}
+  .foot{font-size:12px;color:#4a5361;text-align:center}
+  kbd{background:#1B1F25;border:1px solid #2C333C;border-radius:4px;padding:1px 6px;font-size:11px}
+
+  /* ===================================================================
+     手机窄屏：预览页本身也要能在手机上看。
+     车机版舞台是 16:9 两栏，在 390px 宽的手机上会缩成一条缝，
+     所以这里把它重排成和 App 手机版一致的单列（播放卡在上、列表在下）。
+     只改排版不改交互 —— 按钮、滑动、★/⊘ 全部沿用同一套 JS。
+     =================================================================== */
+  @media (max-width: 760px){
+    body{padding:0;gap:0;justify-content:flex-start;background:var(--bg)}
+    .stage{aspect-ratio:auto;max-width:none;width:100%}
+    .bezel{
+      display:block;border-radius:0;box-shadow:none;overflow:visible;
+      padding:8px 12px 12px;
+    }
+    .left{
+      width:100%;border-radius:12px;padding:14px 14px 12px;
+      /* 竖屏手指纵向滑动留给页面滚动，换台走左右滑 */
+      touch-action:pan-y;
+    }
+    /* 播放卡内部原本用 vw 单位（随视口缩放），手机上必须换成固定 px，
+       否则整套会缩成一条细线。数值对齐 App 手机版：台标 119dp、台名 30sp、按钮 76dp */
+    .left .kicker{font-size:15px;letter-spacing:.18em}
+    .left .logo{width:119px;height:119px;border-width:3px;font-size:52px}
+    .left .station{font-size:30px;margin-top:10px;line-height:1.2}
+    .left .live{font-size:16px;margin-top:6px}
+    .left .period{font-size:14px;margin-top:2px}
+    .left .subtitle{font-size:14px;margin-top:2px}
+    .left .timeline{margin-top:10px}
+    .left .tl-head{font-size:12px}
+    .left .chip{font-size:13px;padding:2px 10px;border-radius:8px}
+    .left .bar{height:6px;border-radius:3px;margin-top:4px}
+    .left .bar i{border-radius:3px}
+    .left .status{font-size:15px;margin-top:6px}
+    .left .ctrls{margin-top:10px;height:76px;gap:8px}
+    .left .ctrls button{font-size:20px;border-radius:12px}
+    .left .ctrls button.primary{font-size:20px}
+    /* 顶栏在窄屏下换行，按钮改小 */
+    .right .topbar{gap:6px;flex-wrap:wrap}
+    .right .pill{font-size:13px;padding:8px 10px}
+    .right .region{font-size:15px;padding:8px 12px}
+    .right .hint{display:none}
+
+    .right{width:100%;padding:0!important}
+    .right .top{margin-top:10px!important;flex-wrap:wrap;gap:6px!important}
+    .right .top .pill{font-size:13px!important;padding:8px 10px!important}
+    .right .top .region{font-size:15px!important;padding:8px 12px!important}
+    .right .top .hint{display:none}
+    .right .tabs{margin-top:8px!important;gap:8px!important}
+    .right .tab{height:44px!important;font-size:17px!important;line-height:44px!important}
+    .right .list{margin-top:8px!important;height:auto!important;max-height:none!important;
+      overflow:visible!important}
+    .right .row{height:62px!important;padding:0 4px 0 12px!important}
+    .right .row .no{font-size:14px!important;width:30px!important}
+    .right .row .title{font-size:18px!important}
+    .right .row .sub{font-size:12px!important}
+    .right .row .star,.right .row .hide{font-size:20px!important;width:44px!important}
+
+    /* 诊断抽屉改成全屏，手机上才看得清 */
+    .panel{width:100%!important;height:100%!important;border-radius:0!important;
+      padding:14px!important}
+    .panel .logs{font-size:12px!important}
+    .panel .close{font-size:15px!important;padding:8px 16px!important}
+    .foot{font-size:11px;padding:10px 12px 18px;line-height:1.6}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="bezel">
+    <!-- 左：控制区 -->
+    <div class="left">
+      <div class="kicker">FM 直播</div>
+      <div class="spacer"></div>
+      <div class="logo"><span id="logo">四</span><img id="logoimg" alt=""></div>
+      <div class="station" id="station">四川交通广播</div>
+      <div class="live" id="live">● 正在直播</div>
+      <div class="period">00:00–24:00</div>
+      <div class="subtitle" id="subtitle">宜宾文艺生活广播</div>
+
+      <div class="timeline">
+        <div class="tl-head">
+          <span>00:00:00</span>
+          <span class="chip" id="now">--:--:--</span>
+          <span>24:00:00</span>
+        </div>
+        <div class="bar"><i id="bar" style="width:0%"></i></div>
+      </div>
+
+      <div class="status" id="status">正在播放</div>
+      <div class="spacer"></div>
+      <div class="ctrls">
+        <button id="prev">上一台</button>
+        <button class="primary" id="play">暂停</button>
+        <button id="next">下一台</button>
+      </div>
+    </div>
+
+    <!-- 右：列表 -->
+    <div class="right">
+      <div class="topbar">
+        <div class="hint" id="hint">媒体会话已常驻（方向盘按键可用）</div>
+        <button class="pill small" id="btnmanage">隐藏管理</button>
+        <button class="pill small" id="btnlog">诊断</button>
+        <button class="pill" id="region">四川 · 宜宾 ▾</button>
+      </div>
+      <div class="tabs">
+        <div class="tab on" id="tab_all">全部电台</div>
+        <div class="tab" id="tab_fav">★ 收藏</div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <!-- 诊断抽屉 -->
+    <div class="drawer" id="drawer">
+      <div class="panel">
+        <h3>诊断 · 运行日志</h3>
+        <div class="check">
+          · 前台服务：<b>运行中</b><br>
+          · 播放器：<b>已就绪</b>　· 媒体会话：<b>已激活</b>（MEDIA_BUTTON → MediaButtonReceiver）<br>
+          按键是否到达，看下面日志里有没有 <b>[按键]</b> 开头的行：<br>
+          <b>有</b> → 车机已派发，问题在处理逻辑；<b>没有</b> → 车机没把本应用当媒体源（去车机设置选默认音乐应用）。
+        </div>
+        <div class="logs" id="logs"></div>
+        <button class="close" id="btnclose">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="foot">预览快捷键：<kbd>←</kbd><kbd>→</kbd> 切台 · <kbd>空格</kbd> 播放/暂停 · <kbd>1-9</kbd> 跳台 · <kbd>L</kbd> 诊断面板</div>
+
+<script>
+// 实测四川电台（真实标题，顺序即"省级台优先"的排序结果）
+// 实测四川电台（真实标题）；第三个字段是从央广网 image 字段下载的官方台标
+const SICHUAN = [
+  ["四川交通广播","宜宾文艺生活广播","logo_449.png"],
+  ["四川新闻广播","新闻直播间","logo_448.jpg"],
+  ["四川综合广播","商务时间","logo_452.jpg"],
+  ["四川城市之音","城市自在听","logo_450.png"],
+  ["四川岷江音乐频率","午后情歌集","logo_447.png"],
+  ["四川民族广播","火把剧场","logo_451.png"],
+  ["中国交通广播（四川）","中国交通广播","logo_749.jpg"],
+  ["成都交通文艺广播","交通晚高峰","logo_1360.png"],
+  ["成都经济广播","经济半小时","logo_457.png"],
+  ["成都潮台88.7","潮台音乐","logo_2400.png"],
+  ["AsiaFM成都96.5","Asia FM","logo_1851.jpg"],
+  ["年代音乐1022","年代金曲","logo_1600.webp"],
+  ["绵阳交通广播","绵阳路况",null],
+  ["德阳综合广播","德阳新闻",null],
+  ["乐山音乐交通广播","音乐下午茶",null],
+  ["攀枝花综合广播","攀枝花新闻",null],
+  ["凉山综合广播","开心方向盘",null]
+];
+const PROVINCES=["四川","重庆","云南","贵州","国家","广东","北京","上海","浙江","江苏"];
+let idx=0, playing=true;
+
+const $=s=>document.querySelector(s);
+const list=$('#list');
+
+function glyph(t){
+  for(const ch of t){ if(/[0-9A-Za-z\u4e00-\u9fa5]/.test(ch)) return ch; }
+  return 'F';
+}
+
+function log(tag,msg,cls){
+  const box=$('#logs');
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  const div=document.createElement('div');
+  if(cls) div.className=cls;
+  div.textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} [${tag}] ${msg}`;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+// 收藏集合（默认预置两个，方便直接看到"收藏"视图长什么样）
+// 用台名做收藏 key（与 App 里按 contentId 存储等价）。预置两台方便看收藏视图
+const favs = new Set(['四川城市之音', '四川岷江音乐频率']);
+let showFav = false;
+// 被隐藏的电台（⊘）。可在「隐藏管理」恢复
+const hidden = new Set();
+
+function visibleList(){
+  return SICHUAN.filter(s => !hidden.has(s[0]) && (!showFav || favs.has(s[0])));
+}
+
+function render(){
+  const vis = visibleList();
+  list.innerHTML = vis.map((s,i)=>`
+    <div class="row ${s[0]===SICHUAN[idx][0]?'active':''}" data-n="${i}">
+      <div class="no">${i+1}</div>
+      <div class="txt">
+        <div class="title">${s[0]}</div>
+        <div class="sub">四川 · ${s[1]}</div>
+      </div>
+      <div class="star ${favs.has(s[0])?'fav':''}" data-fav="${i}">${favs.has(s[0])?'★':'☆'}</div>
+      <div class="hide" data-hide="${i}" title="隐藏这个台">⊘</div>
+    </div>`).join('');
+
+  const cur=SICHUAN[idx];
+  $('#station').textContent=cur[0];
+
+  // 台标：有官方图就用图，没有/加载失败就保留字标（与 App 行为一致）
+  const img=$('#logoimg');
+  img.onerror=()=>{ img.hidden=true; };
+  img.onload=()=>{
+    img.hidden=false;
+    // 与 App 的 LogoLoader.applyScaleType 同一规则：宽高比 > 1.8 视为长条标
+    const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
+    img.className = ratio > 1.8 ? 'wide' : '';
+  };
+  if(cur[2]){ img.hidden=true; img.src='logos/'+cur[2]; }
+  else { img.hidden=true; img.removeAttribute('src'); }
+  $('#logo').textContent=glyph(cur[0]);
+
+  $('#subtitle').textContent=cur[1];
+  $('#status').textContent=playing?'正在播放':'已暂停';
+  $('#live').textContent=playing?'● 正在直播':'❚❚ 已暂停';
+  $('#live').className=playing?'live':'live paused';
+  $('#play').textContent=playing?'暂停':'播放';
+
+  // 标签态
+  $('#tab_all').className = 'tab' + (showFav?'':' on');
+  $('#tab_fav').className = 'tab' + (showFav?' on':'');
+  $('#tab_fav').textContent = favs.size>0 ? `★ 收藏 (${favs.size})` : '★ 收藏';
+
+  if(showFav && vis.length===0){
+    list.innerHTML='<div style="padding:2vw;color:#8B949E;font-size:1.1vw">还没有收藏，点列表右侧的 ☆ 添加</div>';
+  }
+  // 高亮跟随光标：只在看不见时才滚（对应 App 的 QueueRow.scrollTargetFor）
+  const el=list.querySelector('.row.active');
+  if(el){
+    const lr=list.getBoundingClientRect(), r=el.getBoundingClientRect();
+    const offscreen = r.top < lr.top || r.bottom > lr.bottom;
+    // 列表在页面里是随页面滚动的（手机版没有内部滚动），所以用 nearest 即可
+    if(offscreen) el.scrollIntoView({block:'center'});
+  }
+}
+
+function next(){ const old=SICHUAN[idx][0]; idx=(idx+1)%SICHUAN.length; playing=true;
+  log('取址',old+' 地址命中缓存'); log('播放','切台 → '+SICHUAN[idx][0]); render(); }
+function prev(){ const old=SICHUAN[idx][0]; idx=(idx-1+SICHUAN.length)%SICHUAN.length; playing=true;
+  log('取址',old+' 地址命中缓存'); log('播放','切台 → '+SICHUAN[idx][0]); render(); }
+function toggle(){ playing=!playing; log(playing?'播放':'暂停', playing?'继续播放':'已暂停'); render(); }
+
+// 三个控制按钮：单击即生效（对应实车 focusableInTouchMode 修复）
+$('#prev').onclick=prev;
+$('#next').onclick=next;
+$('#play').onclick=toggle;
+
+$('#tab_all').onclick=()=>{ showFav=false; render(); };
+$('#tab_fav').onclick=()=>{ showFav=true; render(); };
+
+// 列表点击：分三种目标 —— ★收藏、⊘隐藏、点行换台
+list.onclick=e=>{
+  // ★ 收藏开关：只切收藏，不换台
+  const star=e.target.closest('[data-fav]');
+  if(star){
+    const s=visibleList()[+star.dataset.fav];
+    if(favs.has(s[0])){ favs.delete(s[0]); log('收藏','已取消收藏：'+s[0]); }
+    else { favs.add(s[0]); log('收藏','已收藏：'+s[0]+'（共 '+favs.size+' 个）'); }
+    render();
+    return;
+  }
+  // ⊘ 隐藏：只是从列表移除，可在「隐藏管理」恢复
+  const hideBtn=e.target.closest('[data-hide]');
+  if(hideBtn){
+    const s=visibleList()[+hideBtn.dataset.hide];
+    hidden.add(s[0]);
+    log('隐藏','已隐藏：'+s[0]+'（可在隐藏管理恢复）');
+    render();
+    return;
+  }
+  // 点行 → 换台
+  const row=e.target.closest('.row'); if(!row) return;
+  const s=visibleList()[+row.dataset.n];
+  idx=SICHUAN.indexOf(s); playing=true;
+  log('播放','切台 → '+s[0]); render();
+};
+
+// 隐藏管理：列出被隐藏的台，点「恢复」移除
+$('#btnmanage').onclick=()=>{
+  if(hidden.size===0){
+    alert('还没有隐藏任何电台。\n\n在列表里点电台右侧的 ⊘ 即可隐藏。');
+    return;
+  }
+  const names=[...hidden].join('、');
+  if(confirm('已隐藏 '+hidden.size+' 个电台：\n\n'+names+'\n\n点「确定」全部恢复显示。')){
+    hidden.clear();
+    log('隐藏','已恢复全部隐藏电台');
+    render();
+  }
+};
+
+// 上半区滑动换台：上滑/左滑=下一台，下滑/右滑=上一台（与 App 的 SwipeStationHelper 一致）
+(function(){
+  const area=document.querySelector('.left');
+  let sx=0, sy=0, tracking=false;
+  area.addEventListener('touchstart', e=>{
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY;
+    // 按在按钮上就不算滑动，避免和按钮点击冲突
+    tracking = !e.target.closest('button');
+  }, {passive:true});
+  area.addEventListener('touchend', e=>{
+    if(!tracking) return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-sx, dy=t.clientY-sy;
+    const MIN=60;
+    if(Math.abs(dy)>=MIN && Math.abs(dy)>=Math.abs(dx)) dy<0?next():prev();
+    else if(Math.abs(dx)>=MIN) dx<0?next():prev();
+    tracking=false;
+  }, {passive:true});
+  // 桌面预览用鼠标拖拽模拟
+  area.addEventListener('mousedown', e=>{
+    if(e.target.closest('button')) { tracking=false; return; }
+    sx=e.clientX; sy=e.clientY; tracking=true;
+  });
+  area.addEventListener('mouseup', e=>{
+    if(!tracking) return;
+    const dx=e.clientX-sx, dy=e.clientY-sy, MIN=60;
+    if(Math.abs(dy)>=MIN && Math.abs(dy)>=Math.abs(dx)) dy<0?next():prev();
+    else if(Math.abs(dx)>=MIN) dx<0?next():prev();
+    tracking=false;
+  });
+})();
+
+$('#btnlog').onclick=()=>$('#drawer').classList.add('show');
+$('#btnclose').onclick=()=>$('#drawer').classList.remove('show');
+$('#drawer').onclick=e=>{ if(e.target.id==='drawer') $('#drawer').classList.remove('show'); };
+$('#region').onclick=()=>{
+  const i=PROVINCES.indexOf($('#region').textContent.split(' ')[0]);
+  const p=PROVINCES[(i+1)%PROVINCES.length];
+  $('#region').textContent=p+' ▾';
+  log('列表','请求 '+p+' 电台列表…');
+};
+
+// 时间轴：当天 0 点 → 现在
+function tickTimeline(){
+  const d=new Date();
+  const sec=d.getHours()*3600+d.getMinutes()*60+d.getSeconds();
+  const p=n=>String(n).padStart(2,'0');
+  $('#now').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  $('#bar').style.width=((sec/86400)*100).toFixed(2)+'%';
+}
+setInterval(tickTimeline,1000);
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'){next();e.preventDefault()}
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){prev();e.preventDefault()}
+  else if(e.key===' '||e.key==='Enter'){toggle();e.preventDefault()}
+  else if(/^[1-9]$/.test(e.key)){idx=Math.min(+e.key-1,SICHUAN.length-1);playing=true;
+    log('按键','数字键 '+e.key+' → 第 '+e.key+' 台'); render()}
+  else if(e.key==='l'||e.key==='L'){$('#btnlog').click()}
+  else if(e.key==='Escape'){$('#drawer').classList.remove('show')}
+});
+
+// 预置一段启动日志，呈现真实链路的样子
+log('服务','前台服务启动，播放器就绪');
+log('会话','MediaSession 已激活，MEDIA_BUTTON → MediaButtonReceiver','k');
+log('列表','拿到 44 个电台');
+log('取址','已缓存 44 个台的地址');
+log('取址','四川交通广播 用缓存（0 分钟前）');
+log('播放','open ytcastmp3.radio.cn/130/radios/110449/index_110449.m3u8（候选 1/4）');
+log('缓冲','BUFFERING_START','w');
+log('播放','就绪并开始播放');
+log('提示','点一下方向盘按键，这里会出现 [按键] 开头的记录','w');
+
+render();
+tickTimeline();
+</script>
+</body>
+</html>

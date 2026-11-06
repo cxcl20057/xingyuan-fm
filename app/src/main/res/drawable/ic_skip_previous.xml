@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  上一台（竖线 + 向左三角，Material "skip_previous"）。
+
+  <h3>为什么和 ic_play 不同色</h3>
+  v2.0 浅色主题下，主播放键是橙底 → 图标必须白；
+  而上一台/下一台是浅灰底 → 白色图标直接消失。所以这两个改成
+  @color/icon_secondary（深灰），与浅灰底形成足够的对比。
+
+  形状本身沿用 v1.8.4 的对齐：三角高 14、竖线 12，三者并排时视觉重心一致。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="@color/icon_secondary"
+        android:pathData="M6,6h2.2v12H6zM18,6l-8.6,6l8.6,6z" />
+</vector>

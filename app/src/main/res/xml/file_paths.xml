@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider 只暴露 update/ 这一个目录。
+
+  为什么范围这么窄：FileProvider 一旦把某个目录声明出去，
+  持有授权 Uri 的应用就能读该目录下的任意文件。这里只需要把 APK 交给安装器，
+  所以只放开 getExternalFilesDir(null)/update/，
+  日志、收藏、地址缓存这些目录一个都不共享。
+
+  external-files-path 对应 context.getExternalFilesDir(null)，
+  在 Android 4.4+ 上不需要任何存储权限即可写入。
+-->
+<paths>
+    <external-files-path
+        name="update"
+        path="update/" />
+</paths>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  手机列表项（可用宽度 < 600dp）。台名 16sp / 副标题 11sp。
+
+  <h3>行高不要写死在这里</h3>
+  XML 里的 56dp 只是预览值。运行时由 {@code MainActivity.applyRowHeight()}
+  调 {@code PhoneLayout.rowHeightPx()} 覆盖：手机默认 56dp、短边 ≥ 420dp 的大屏 64dp。
+
+  <h3>台名里的频率</h3>
+  台名由 {@code StationTitle.styled(title, 实际字号)} 拼成「四川交通广播（FM101.7）」，
+  频率字号 = 台名字号 − 2sp。基准必须读本文件里 item_title 的<b>实际</b>字号（16sp）。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@drawable/item_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="4dp">
+
+    <!-- 正在播的橙色指针；用 INVISIBLE 占位，切换台时文字不抖 -->
+    <View
+        android:id="@+id/item_mark"
+        android:layout_width="3dp"
+        android:layout_height="24dp"
+        android:background="@drawable/item_mark"
+        android:visibility="invisible" />
+
+    <!-- v2.2：封面方块优先显示真实台标图（item_logo），无图回落到台名首字（item_no）。
+         32dp + 6dp + 6dp 与旧版 24dp 序号列宽度基本持平 -->
+    <FrameLayout
+        android:id="@+id/item_cover"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp">
+
+        <TextView
+            android:id="@+id/item_no"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/cover_chip"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="川"
+            android:textColor="@color/cover_text"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/item_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/cover_chip"
+            android:clipToOutline="true"
+            android:contentDescription="电台台标"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/item_text"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/item_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:duplicateParentState="true"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:textColor="@color/item_sub_text"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 48dp 见方 + 13dp 内边距 = 22dp 图标，符合 Material 图标留白惯例 -->
+    <ImageView
+        android:id="@+id/item_star"
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
+        android:contentDescription="收藏"
+        android:padding="13dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_favorite_border"
+        android:tint="@color/fav_icon_tint" />
+
+    <ImageView
+        android:id="@+id/item_hide"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:contentDescription="从列表隐藏"
+        android:padding="11dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_hide"
+        android:tint="@color/text_hint" />
+</LinearLayout>

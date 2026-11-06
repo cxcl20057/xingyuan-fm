@@ -1,0 +1,20 @@
+<Slide style={{ padding: 60, background: '#FFFFFF' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1F2937' }}>镜头 2 · 车机界面</Text>
+    <Box style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 14, paddingRight: 14, background: '#FFF3EA', borderRadius: 20 }}>
+      <Text style={{ fontSize: 16, color: '#FF6600', fontWeight: 'bold' }}>3 – 11 秒</Text>
+    </Box>
+  </Box>
+  <Box style={{ height: 1, background: '#E5E7EB', marginTop: 16, marginBottom: 40 }} />
+  <Box style={{ flexDirection: 'row', gap: 48, alignItems: 'center' }}>
+    <Image src="assets/car_screen.png" style={{ width: 620, height: 349, borderRadius: 12, border: '1px solid #E5E7EB' }} />
+    <Box style={{ flex: 1, flexDirection: 'column', gap: 18 }}>
+      <Text style={{ fontSize: 20, color: '#6B7280' }}>画面</Text>
+      <Text style={{ fontSize: 24, color: '#1F2937', lineHeight: 1.5 }}>车机横屏两栏：左播放卡（台标 + 台名 + 按钮），右电台列表</Text>
+      <Text style={{ fontSize: 20, color: '#6B7280', marginTop: 10 }}>旁白 / 字幕</Text>
+      <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#FF6600', lineHeight: 1.45 }}>「上车自动接管方向盘按键，按城市自动列出当地电台」</Text>
+      <Text style={{ fontSize: 20, color: '#6B7280', marginTop: 10 }}>运镜 / 转场</Text>
+      <Text style={{ fontSize: 24, color: '#1F2937' }}>缓慢推进，淡入淡出</Text>
+    </Box>
+  </Box>
+</Slide>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.rea.radio">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!--
+      Android 14（API 34）起，声明 foregroundServiceType=mediaPlayback 的服务
+      必须同时声明这条权限，否则 startForeground 直接抛 SecurityException。
+      车机（API 28）上这条权限不存在也不会报错，属于纯增量兼容项。
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!--
+      开机即建立 MediaSession，让车机媒体中心一开始就能发现本应用 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!--
+      更新功能用到的两个权限。
+      REQUEST_INSTALL_PACKAGES 是 Android 8.0 起的"允许安装未知应用"声明——
+      声明了才有资格被用户授权，不声明连授权页都进不去。
+      注意它<b>不等于</b>能静默安装：静默安装要 INSTALL_PACKAGES（系统签名级权限），
+      普通应用永远拿不到，所以本应用只能是"下载完拉系统安装器让用户点确认"。
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.hardware.type.automotive" android:required="false" />
+    <!--
+      横屏不是硬性要求，只是能力声明。
+      车机（星愿 E22H）是固定横屏面板，Carlink 投屏窗口也能是接近方形的比例，
+      这里 required=false 表示两种都能跑，方向交给系统，不锁死。
+    -->
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false" />
+
+    <!--
+      大屏 / 任意密度声明（v1.9.5，Carlink 车机适配）。
+      为什么需要：
+        · xlargeScreens —— 车机是 1920×1080 的超大屏，不声明时某些 ROM 会按
+          "不支持大屏"处理，套一层兼容缩放，dp 被整体放大，版面直接溢出；
+        · anyDensity —— 车机密度是 2.0、Carlink 投屏虚拟屏是 2.25，都不是标准档位，
+          声明后系统按实际密度换算 dp，而不是拿某个标准密度的图去拉伸。
+      注意这四条在 API 28 上已不是必需项（系统默认按实际尺寸处理），
+      但声明出来能挡掉部分车机 ROM 的旧式兼容判断，代价为零。
+    -->
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        android:anyDensity="true" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="${appIcon}"
+        android:label="@string/app_name"
+        android:supportsRtl="false"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/AppTheme">
+
+        <!--
+          声明支持超宽屏（v1.8.9，Carlink 适配）。
+          Carlink 融合桌面给 app 的虚拟屏是 3200×1600（2:1），比车机物理屏（16:9）更宽。
+          不声明这条时，系统会认为 app 不支持这个比例，给它套 letterbox 边框——
+          车机上实测就是 app 内容四周多出一圈白边。
+          声明 2.4（比 2:1 更宽的上限）后系统不再套框，窗口铺满虚拟屏。
+
+          ⚠️ 准确的规则（v1.9.5 补正，别被上面那段"实测"带偏）：
+          `android.max_aspect` 只在应用<b>不支持调整大小</b>时生效。本应用
+          application/activity 上都写了 resizeableActivity="true"，按 Android 官方
+          文档，可调整大小的窗口本来就可以是任意比例，这个值会被忽略。
+          也就是说：真正让画面铺满的是 resizeableActivity + 窗口给多大就用多大，
+          max_aspect 只是给「某些仍按旧规则判断的 ROM」兜底，且一旦改成
+          resizeableActivity="false" 它就会变成关键配置——改其中任何一个都要一起想。
+        -->
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
+
+        <!--
+          屏幕方向：不锁横屏。
+          车机（星愿）是固定横屏面板，系统本身就不会旋转，不锁也不影响；
+          手机上锁死横屏会直接把画面转 90°，竖着拿根本没法用。
+          版面按「窗口可用尺寸」切换（v1.9.5 起，不再按方向）：
+            · 可用高度 ≥ 480dp 且横屏 → layout-h480dp-land/（车机两栏、28sp）
+            · 其余（手机竖屏/横屏、Carlink 小窗）→ layout/（单列、18sp）
+          改尺寸不重建 Activity（configChanges 已声明），靠 PhoneLayout/适配逻辑就地重排。
+          判据与目录限定符的对应关系见 PhoneLayout.useTwoColumn 与 docs/Carlink车机适配.md。
+        -->
+        <!--
+          launchMode 必须是 standard，不能是 singleTask（v1.8.9，Carlink 适配）。
+
+          线上实测（OPPO Find X8 + Carlink 融合桌面）：
+              I OplusHansManager: uid=10625, pkg=... cannot transition from M to F,
+                                  importance=carDisplay   （每 3 秒重试一次，永远失败）
+          进程被标记为「车机显示专用」却升不到前台 → 画面出不来（车机一直转圈）、
+          拿不到音频焦点（没声音）、MediaSession 不算活跃媒体（方向盘按键无反应）。
+
+          singleTask 的语义是「复用一个已有 Task」，而 Task 归属在**默认显示器**。
+          投屏到虚拟屏时 Activity 被搬到另一块 display 上，系统认为它不在前台，
+          于是 M→F 永远失败。改成 standard：每次投屏启动都在目标显示器上新建 Task。
+
+          documentLaunchMode 同理不设——多实例会抢同一个 MediaSession。
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|density"
+            android:exported="true"
+            android:launchMode="standard"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="false"
+            android:hardwareAccelerated="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <!-- 部分车机（含星愿 rover）按 CAR_LAUNCHER 分类索引车载应用 -->
+                <category android:name="android.intent.category.CAR_LAUNCHER" />
+                <!-- 声明为音乐应用，部分车机媒体中心据此建立媒体源入口 -->
+                <category android:name="android.intent.category.APP_MUSIC" />
+            </intent-filter>
+        </activity>
+
+        <!-- 播放器与 MediaSession 的宿主：常驻，保证方向盘按键有目标可派 -->
+        <service
+            android:name=".RadioService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <!--
+          方向盘/蓝牙按键兜底入口（正常路径是 MediaSession 的 media button receiver）。
+
+          ⚠️ 不要再给它加 android:priority（v1.9.7 去掉了原来的 2147483647）：
+          那是「有序广播最高优先级 + 处理完 abortBroadcast」的组合，会把排在后面的
+          接收者（含车机蓝牙电话应用）全部挡掉。星愿车机上「来电时下一曲接听、
+          上一曲挂断」正是靠电话应用收到这两个键，挡掉就等于电话接不起来。
+          对照酷我车机版：它的清单里根本没有 MEDIA_BUTTON 静态接收者。
+        -->
+        <receiver
+            android:name=".MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 车机开机自启：让媒体会话在媒体中心扫描时就存在 -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.ecarx.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+          FileProvider：把下载好的 APK 以 content:// 交给系统安装器。
+          Android 7.0 起不允许跨应用传 file://（会抛 FileUriExposedException），必须走这里。
+          authority 必须全局唯一，所以拼上 applicationId（见 ApkProvider.authority）。
+          exported=false + grantUriPermissions=true 是标准组合：
+          平时谁也读不到，只在拉起安装器时按 Intent 临时授权那一个文件。
+        -->
+        <provider
+            android:name=".ApkProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

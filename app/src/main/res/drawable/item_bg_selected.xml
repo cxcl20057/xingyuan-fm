@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  列表项（正在播）：浅橙底 + 12dp 圆角。
+
+  左侧那道 3dp 橙色指示条不放这里 —— 它在 item_station.xml 里是一个独立 View，
+  由代码按选中态显隐。原因是 layer-list 做「左对齐细条」需要 API 23 的
+  android:width/gravity on item，本项目 minSdk 21，用 View 更稳。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_wash" />
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/accent" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/item_bg_selected" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</selector>

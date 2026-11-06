@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  「全部电台 / 我的收藏」选中态：橙底白字胶囊。
+
+  胶囊而不是下划线：车机上手指按 52dp 高的胶囊比按一条 3dp 的线容易得多，
+  而且橙底本身就是最醒目的一档，不需要再按下划线（喜马拉雅车机版也是实心胶囊）。
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_solid_pressed" />
+            <corners android:radius="20dp" />
+            <stroke android:width="2dp" android:color="@color/accent_ring" />
+        </shape>
+    </item>
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/accent_solid" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+</selector>

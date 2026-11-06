@@ -1,0 +1,290 @@
+plugins {
+    id 'com.android.application'
+}
+
+/*
+ * ---------------------------------------------------------------- Carlink 构建
+ *
+ * ICCOA Carlink 的车机桌面只列「应用支持白名单」内的 app，包名不在名单里就
+ * 连图标都不出现。正式包名 com.rea.radio 不在名单内，所以想投屏到车机，
+ * 必须用白名单里的某个包名重新打包。
+ *
+ * 用法（不改任何源码，纯参数切换）：
+ *
+ *   gradle :app:assembleRelease -PtargetPkg=net.joydao.radio     # 听听广播（白名单内）
+ *   gradle :app:assembleRelease -PtargetPkg=com.shinyv.cnr       # 云听（白名单内）
+ *   gradle :app:assembleRelease                                  # 不传 = 正式包名
+ *
+ * 不传 targetPkg 时行为与从前完全一致，构建结果与正式发版一字不差。
+ *
+ * 重要：换了包名就必须换签名。包名冒充别人的、签名还是自己的，一旦那个包名
+ * 对应的正版应用也装在手机上，两者签名冲突会互相覆盖安装。所以这里对
+ * targetPkg 构建强制要求单独的 carlink 签名文件（见 signingConfigs.carlink）。
+ *
+ * v1.9.0 补充：白名单只校包名、不校签名（实测确认），
+ * 所以「换包名」和「换图标/换名字」是两件独立的事——
+ * 后者是为了让用户在同一台手机上分辨两个 app，不属于伪装目的。
+ */
+def targetPkg = project.findProperty('targetPkg')
+def isCarlinkBuild = targetPkg != null && !targetPkg.toString().trim().isEmpty()
+
+// ---------------------------------------------------------------- 签名口令
+// 口令不硬编码、不入库，按优先级读取：
+//   1. 命令行 -Pkey.storePassword=xxx（临时、不入库，适合 CI/协作）
+//   2. local.properties 里的 key.* 项（不入库）
+// 两处均未提供时为空 —— 公开仓库不携带任何口令 / 别名默认值，
+// 签名时会因缺少口令而失败，按需在 local.properties 补全即可。
+// Carlink 签名同样走这套机制，键名前缀为 key.carlink*。
+def signingProp = { String name, String fallback ->
+    def v = project.findProperty(name)
+    if (v == null && file('../local.properties').exists()) {
+        def p = new Properties()
+        file('../local.properties').withInputStream { p.load(it) }
+        v = p.getProperty(name)
+    }
+    return v == null || v.toString().trim().isEmpty() ? fallback : v.toString()
+}
+
+android {
+    namespace 'com.rea.radio'
+
+    signingConfigs {
+        release {
+            storeFile file('../keystore/release.jks')
+            storePassword signingProp('key.storePassword', '')
+            keyAlias signingProp('key.alias', '')
+            keyPassword signingProp('key.keyPassword', '')
+        }
+        // Carlink 验证包专用签名。刻意与正式签名分开：
+        // 验证包的包名是借来的，绝不能用正式身份去签。
+        carlink {
+            storeFile file('../keystore/carlink.jks')
+            storePassword signingProp('key.carlinkStorePassword', '')
+            keyAlias signingProp('key.carlinkAlias', '')
+            keyPassword signingProp('key.carlinkKeyPassword', '')
+        }
+    }
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.rea.radio"
+        minSdk 21
+        targetSdk 28
+        // 版本号跟主线走，本仓库在此基础上独立发版（v2.2.2 / versionCode 42）。
+        // Carlink 包的 applicationId 是借来的白名单包名，与正式版互不影响，
+        // 但同一个包名内部仍然只允许升不允许降，改版本时留意别比上次发的小。
+        versionCode 42
+        versionName "2.2.2"
+
+        /*
+         * 检查更新 / 打开下载页指向哪个仓库 —— 按构建渠道切换，别再写死了。
+         *
+         * 出过的问题（v1.9.11 及以前）：UpdateChecker 里把仓库写死成
+         * `cxcl20057/xinyuan-radio`（正式版仓库），但 Carlink 版的 Release
+         * 全发在 `cxcl20057/xinyuan-radio-carlink`。匿名访问前者的
+         * `/releases` 和 `/api/v1/.../releases` 都是 404 —— 用户点「更新」
+         * 或「打开下载页」只会得到 404，所以看起来「链接根本点不开」。
+         * 后者匿名可读（实测 API 与 APK 直链都是 200），改指过去即可用。
+         *
+         * 用 buildConfigField 而不是运行时读包名判断：与 applicationId、
+         * 签名的判断依据保持同一个（isCarlinkBuild = 有没有传 -PtargetPkg），
+         * 三处口径一致，不会出现「包名改了、更新地址没改」的半截状态。
+         */
+        buildConfigField "String", "UPDATE_REPO",
+                isCarlinkBuild ? '"cxcl20057/xinyuan-radio-carlink"' : '"cxcl20057/xinyuan-radio"'
+        buildConfigField "String", "UPDATE_CHANNEL",
+                isCarlinkBuild ? '"carlink"' : '"official"'
+
+        if (isCarlinkBuild) {
+            // 换包名。namespace（Java 包结构）保持不变，只改 applicationId——
+            // 代码里的 R 类和类名都还挂在 com.rea.radio 下，编译不受影响。
+            applicationId targetPkg.toString().trim()
+        }
+    }
+
+    buildTypes {
+        // 旁路安装用的包名后缀（v1.9.1），**默认不启用**。
+        //
+        // 为什么需要：调试包和车上已装的正式版要能共存。不加后缀时两者包名相同、
+        // 签名不同，adb install 会被 INSTALL_FAILED_UPDATE_INCOMPATIBLE 挡住，
+        // 只能先卸载正式版 —— 那会连带清掉收藏台、音量偏好这些用户数据。
+        //   构建旁路包：gradle :app:assembleDebug -PsideloadSuffix
+        //
+        // 为什么默认关闭：改 applicationId 会连累单元测试。测试里有按
+        // com.rea.radio 查 ApplicationInfo 的用例（Robolectric 用的是合并后的
+        // 清单包名），后缀一开就会抛 PackageManager$NameNotFoundException。
+        // 所以只在真的要往车上装旁路包时才打开。
+        debug {
+            if (project.hasProperty('sideloadSuffix')) {
+                applicationIdSuffix '.debug'
+            }
+        }
+        release {
+            minifyEnabled false
+            // Carlink 构建用独立签名，其余用正式签名
+            signingConfig isCarlinkBuild ? signingConfigs.carlink : signingConfigs.release
+        }
+    }
+
+    /*
+     * 换了包名后，产物文件名也区分开，免得和正式包混在同一个目录里认错。
+     *
+     * v1.9.0 起改成「星愿FM-Carlink-<版本>.apk」：
+     * 原来的名字里带着 targetPkg，一行三十多个字符，
+     * 而用户看到的 app 名称已经是「星愿 FM」了，文件名没必要再暴露包名。
+     */
+    applicationVariants.all { variant ->
+        if (isCarlinkBuild && variant.buildType.name == 'release') {
+            variant.outputs.all {
+                outputFileName = "星愿FM-Carlink-${variant.versionName}.apk"
+            }
+        }
+    }
+
+    /*
+     * Carlink 版专用资源（src/carlink/res）。
+     *
+     * 这个源集里有两样东西：
+     *   1. ic_launcher_carlink.png —— 红色收音机图标（用户提供的造型）
+     *   2. values/strings.xml      —— app_name 覆盖成「星愿 FM」
+     *
+     * 为什么需要完全不同的图标和名字：
+     * Carlink 版与正式版**同时装在同一个手机上**。
+     * 两者包名不同（com.rea.radio / net.joydao.radio），系统层面不冲突，
+     * 但桌面上一模一样的图标和名字，用户根本分不清点开的是哪个。
+     *
+     * 配色刻意拉开：
+     *   正式版     深底 #0E1013 + 橙色声波（抽象声波）
+     *   Carlink 版 红底 #CD292D + 白色收音机（具象收音机）
+     * 图形和配色都不同，扫一眼就能分辨。
+     *
+     * ## 为什么用 flavor 而不是往 main 里塞 srcDirs
+     *
+     * 第一版写的是 `main { res.srcDirs += 'src/carlink/res' }`，想用同名
+     * app_name 覆盖掉 src/main 里的「星愿收音机」。构建直接失败：
+     *
+     *     [string/app_name] src/main/res/values/strings.xml
+     *     [string/app_name] src/carlink/res/values/strings.xml: Duplicate resources
+     *
+     * 原因：两个目录都挂在**同一个 sourceSet** 里，AGP 视它们为平级，
+     * 平级同名资源就是冲突，不存在「谁覆盖谁」。资源覆盖的优先级只在
+     * **不同 sourceSet 之间**才成立（flavor > main）。
+     *
+     * 所以改成 flavor：carlink flavor 打开时，src/carlink/res 是独立的
+     * flavor sourceSet，天然具备覆盖 main 的优先级；关闭时（正式构建）
+     * 这个 flavor 根本不存在，目录也不会被读取。
+     *
+     * 这样也顺带解决了另一个隐患：以前靠 isCarlinkBuild 变量控制 sourceSets，
+     * 属于「运行时拼装」，现在交给 AGP 自己的维度模型，更不容易出错。
+     */
+    flavorDimensions += "variant"
+    productFlavors {
+        // 正式版：什么都不加，与从前完全一致
+        official {
+            dimension "variant"
+        }
+        // Carlink 版：叠加 src/carlink 下的资源
+        carlink {
+            dimension "variant"
+        }
+    }
+
+    /*
+     * 图标资源名通过 manifest 占位符切换。
+     * 正式构建 → ic_launcher（深底橙波，与历史版本一致）
+     * Carlink 构建 → ic_launcher_carlink（红底收音机，来自 src/carlink/res）
+     * 两个资源名不同，所以即使合并也不会撞名。
+     */
+    defaultConfig {
+        manifestPlaceholders = [
+                appIcon: isCarlinkBuild ? '@mipmap/ic_launcher_carlink'
+                                        : '@mipmap/ic_launcher'
+        ]
+    }
+
+    /*
+     * BuildConfig 开关。
+     * AGP 8 起默认不再生成 BuildConfig，必须显式打开 ——
+     * 版本号徽标与更新仓库地址都从 BuildConfig 读（见 UPDATE_REPO 注释）。
+     */
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+            includeAndroidResources = true
+
+            all {
+                // ---- Robolectric 在 Windows 上的硬限制 ----
+                //
+                // Robolectric 4.10 起图形栈全面 native 化：构造任何 View 都会调到
+                // RenderNodeNatives.nCreate，需要 native/<os>/<arch>/robolectric-nativeruntime
+                // 动态库。这个库上游**只发布了 linux 与 mac** 版本，没有 Windows 的 DLL，
+                // 因此在 Windows 上跑渲染类测试必然抛：
+                //   IllegalArgumentException: resource native/windows/x86_64/robolectric-nativeruntime.dll not found
+                //
+                // 试过 robolectric.graphicsMode=LEGACY（属性确实传到了测试 JVM，
+                // 见 --info 的 worker 命令行），4.11.1 仍然走 native，已无可回退的纯 Java 实现。
+                // WSL 未安装发行版、无 Docker，也不具备替代条件。
+                //
+                // 处置：Windows 上排除这 6 个「必须真正渲染 / 布局」的测试类，其余 200+ 个
+                // （含全部版面判据 PhoneLayoutTest）照常执行；
+                // Linux / mac 构建机不受影响，仍然全量跑，出包前的完整验证在那边完成。
+                if (System.getProperty('os.name', '').toLowerCase().contains('windows')) {
+                    it.filter {
+                        excludeTestsMatching "com.rea.radio.CarScreenTest"            // 车机两栏布局测量
+                        excludeTestsMatching "com.rea.radio.PhoneScreenTest"          // 手机单列布局测量
+                        excludeTestsMatching "com.rea.radio.PhoneScreenSmallTest"
+                        excludeTestsMatching "com.rea.radio.UiRenderTest"             // 截图渲染
+                        excludeTestsMatching "com.rea.radio.FavoriteKeepsScrollTest"  // 依赖 ListView 真实布局与滚动
+                        excludeTestsMatching "com.rea.radio.ListFollowsPlaybackTest"  // 同上
+                    }
+                    it.doFirst {
+                        logger.lifecycle("ℹ Windows 环境：已跳过 6 个 Robolectric 渲染/布局测试类" +
+                                "（nativeruntime 无 Windows DLL），完整验证请在 Linux 构建机执行")
+                    }
+                }
+            }
+        }
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+dependencies {
+    // 车机媒体中心 SDK（EAS）—— 从网易云车机版提取的 com.ecarx.eas.* / ecarx.xsf.*（v1.9.1）。
+    //
+    // 作用：把本应用注册成星愿车机媒体中心的媒体源，让方向盘按键在 App 处于后台时
+    // 也能生效（前台那条路走的是 MainActivity.onKeyDown 的私有键码）。
+    // 这是「不进仓库二进制依赖」的唯一例外，来龙去脉见 docs/方向盘按键.md 第七章。
+    //
+    // 用 fileTree 而不是 files()：以后若要把 EAS 拆成 eas-sdk.jar + eas-framework.jar
+    // 两个片段，不必再改构建脚本。
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // 播放内核：Media3 ExoPlayer。
+    // 换掉系统 MediaPlayer 的理由见 RadioPlayer 类注释——MediaPlayer 对 HLS 的支持
+    // 依赖厂商实现，两层播放列表（成都广电源）和分片切换经常直接失败。
+    // 只用 exoplayer 核心 + hls 模块，不引 UI 模块（界面还是原生控件）。
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-exoplayer-hls:1.4.1'
+
+    // 只为 FileProvider（更新功能要把下载好的 APK 以 content:// 交给系统安装器）。
+    // 虽然 media3 会传递引入 androidx.core，但那种"顺带有了"很脆——
+    // 上游一改依赖就编译不过，所以显式声明。
+    implementation 'androidx.core:core:1.12.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    // 仅用于 JVM 上的界面渲染验证（不进入 APK）
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'androidx.test:core:1.5.0'
+}

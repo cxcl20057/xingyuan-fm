@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  配色（v2.1 · 白天 / 夜间同一套语义 token）
+  ============================================================
+
+  <h3>为什么拆成两套值但名字不变</h3>
+  v2.0 只有白天一套，夜间模式是「没做的」。v2.1 用 values-night/ 提供同名的
+  全部颜色，白天与夜间的差别只在这个文件里；drawable / layout / Java 一律
+  引用 @color/xxx 或 R.color.xxx，不判断当前是不是夜间。
+  这是 UI/UX Pro Max 的 token-driven theming 规则，也是避免「某个按钮忘了换色」
+  的唯一可靠做法。
+
+  <h3>两套橙，别混用</h3>
+    accent        亮橙，只用在「不承载文字」的地方：直播圆点、进度指针、
+                   指示条、焦点描边、选中标签的底色之外的强调线。
+    accent_solid  深一档的橙，专门承载白字 / 白图标：主播放键、选中标签。
+                   亮橙 #FF6600 上放白字只有 2.94:1，小字达不到 WCAG AA；
+                   压到 #C94808 是 4.76:1。夜间同理用 #C2520C。
+    accent_deep   浅橙底上的强调文字（白天深橙 / 夜间亮橙），两套都 >= 4.5:1。
+
+  <h3>三级文字</h3>
+  text_primary / text_secondary / text_hint 只有三级，不再细分。
+  v2.0 的 text_hint #9AA0AB 在白卡上只有 2.63:1，小字发虚；
+  v2.1 压到 #7A828E（3.88:1）。夜间用 #8A93A1。
+
+  <h3>不要写死十六进制</h3>
+  上一版把 #E6E9EE / #FFC79A / #FFFFFFFF 散在 drawable 里，夜间一律不换色。
+  v2.1 全部收成 surface_pressed / accent_ring / icon_on_accent。
+-->
+<resources>
+
+    <!-- ===== 底面 ===== -->
+    <color name="bg">#F4F5F7</color>
+    <color name="panel">#FFFFFF</color>
+    <!-- 卡片上的次级面：分段控件槽、圆钮底、顶栏胶囊 -->
+    <color name="surface_muted">#F2F4F7</color>
+    <!-- 按下态：比 surface_muted 明显深一档，两套主题都有反馈 -->
+    <color name="surface_pressed">#D8DEE7</color>
+    <!-- 发丝分隔线（装饰性，行间距才是主要分隔手段） -->
+    <color name="divider">#EBEDF0</color>
+
+    <!-- ===== 强调 ===== -->
+    <!-- 品牌亮橙：正在播、进度指针、指示条、焦点描边。不放白字 -->
+    <color name="accent">#FF6600</color>
+    <color name="accent_pressed">#E65C00</color>
+    <!-- 承载白字 / 白图标的橙底：主播放键、选中标签 -->
+    <color name="accent_solid">#C94808</color>
+    <color name="accent_solid_pressed">#A83C06</color>
+    <!-- 焦点态描边（在深橙底上要够亮） -->
+    <color name="accent_ring">#FFC79A</color>
+    <!-- 浅橙底（选中行、地区胶囊、已收藏底） -->
+    <color name="accent_wash">#FFF1E8</color>
+    <!-- 浅橙底上的文字/图标：约 4.7:1 -->
+    <color name="accent_deep">#C2410C</color>
+
+    <!-- ===== 文字 ===== -->
+    <color name="text_primary">#16181D</color>
+    <color name="text_secondary">#5A6270</color>
+    <color name="text_hint">#7A828E</color>
+
+    <!-- ===== 列表 ===== -->
+    <color name="item_text">#16181D</color>
+    <color name="item_sub_text">#6B7280</color>
+    <!-- 未选中行透明：让白卡片透出来，行与行靠间距分隔，不画格子 -->
+    <color name="item_bg">#00000000</color>
+    <color name="item_bg_selected">#FFF1E8</color>
+    <!-- 台名首字封面方块（v2.1 取代纯数字序号，更接近喜马拉雅的内容卡） -->
+    <color name="cover_bg">#F2F4F7</color>
+    <color name="cover_text">#5A6270</color>
+
+    <!-- ===== 图标 ===== -->
+    <!-- 次要图标（上一台 / 下一台 / 隐藏 / 未收藏） -->
+    <color name="icon_secondary">#4A5058</color>
+    <!-- 橙底上的图标：白 -->
+    <color name="icon_on_accent">#FFFFFF</color>
+
+    <!-- 台标字标（浅底上） -->
+    <color name="on_light">#16181D</color>
+
+    <!-- ===== 诊断日志 ===== -->
+    <color name="log_key">#0550AE</color>
+    <color name="log_warn">#9A6700</color>
+    <color name="log_error">#CF222E</color>
+    <color name="log_info">#57606A</color>
+
+</resources>

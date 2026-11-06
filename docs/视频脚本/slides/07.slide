@@ -1,0 +1,17 @@
+<Slide style={{ padding: 60, background: '#FFFFFF' }}>
+  <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+    <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1F2937' }}>完整口播稿</Text>
+    <Box style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 14, paddingRight: 14, background: '#FFF3EA', borderRadius: 20 }}>
+      <Text style={{ fontSize: 16, color: '#FF6600', fontWeight: 'bold' }}>约 120 字 · 30 秒</Text>
+    </Box>
+  </Box>
+  <Box style={{ height: 1, background: '#E5E7EB', marginTop: 16, marginBottom: 40 }} />
+  <Box style={{ paddingTop: 44, paddingBottom: 44, paddingLeft: 48, paddingRight: 48, background: '#FFF3EA', borderRadius: 16, justifyContent: 'center' }}>
+    <Text style={{ fontSize: 30, color: '#1F2937', lineHeight: 1.75 }}>
+      星愿收音机，纯净 FM，为车机而生。上车自动接管方向盘按键，按城市自动列出当地电台；音质自动择优，断流自动重连，无广告、无开屏、无登录。手机同样好用，白天、夜间双主题随环境切换。<span style={{ color: '#FF6600', fontWeight: 'bold' }}>星愿收音机，让广播回到它本来的样子。</span>
+    </Text>
+  </Box>
+  <Box style={{ marginTop: 32, flexDirection: 'row', gap: 20, alignItems: 'center' }}>
+    <Text style={{ fontSize: 18, color: '#6B7280' }}>配音建议：中速语速，关键词（纯净 / 方向盘按键 / 音质择优 / 双主题）停顿 0.2 秒强调</Text>
+  </Box>
+</Slide>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  样式（v2.0 · 浅色主题）
+  ============================================================
+
+  <h3>为什么换父主题</h3>
+  v1.x 用的是 Theme.Material.NoActionBar（深色）。v2.0 界面改成浅色卡片，
+  必须换 Light 版，否则 AlertDialog、Toast、系统控件仍是深色，
+  会出现「白界面里弹出黑对话框」的割裂。颜色本身仍由 @color 控制，
+  父主题只决定系统控件的默认明暗。
+
+  <h3>触控尺寸</h3>
+  车机控制键 88dp 高（实车最低要求是 ≥ 80dp，方向盘扫视时能一次按准），
+  手机 48dp 圆钮 / 56dp 主键，均不低于 Material 的 48dp 最小触控目标。
+  所有间距取 4dp 的倍数 —— 上一版混着 6/7/10/14，看着"差一点"却说不清哪里歪。
+-->
+<resources>
+
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <!-- 状态栏/导航栏跟页面同色，避免顶部出现一条深色带 -->
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <!-- API 23+ 才生效；低版本忽略，不影响 -->
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!--
+      车机控制键（上一台 / 播放 / 下一台）。
+
+      关键：不要设 focusableInTouchMode="true"。
+      设了之后触屏第一次点击只会移焦点、不触发 click，用户得点两次
+      （实车反馈过的"要点两次"就是这个原因）。只保留 focusable="true"，
+      方向盘/键盘焦点导航仍然可用，手指一点就直接响应。
+    -->
+    <style name="CtrlButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">@dimen/car_btn_height</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">@dimen/car_space_4</item>
+        <item name="android:layout_marginEnd">@dimen/car_space_4</item>
+        <item name="android:background">@drawable/btn_bg</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <!-- 主播放键：比两侧略宽，橙底，让"主要操作"一眼可辨 -->
+    <style name="CtrlButtonPrimary" parent="CtrlButton">
+        <item name="android:layout_weight">1.25</item>
+        <item name="android:background">@drawable/btn_bg_primary</item>
+    </style>
+
+    <!--
+      车机按钮内的图标：30dp。
+
+      duplicateParentState 是这里的关键：ImageView 本身不持有 focused/pressed 状态，
+      必须跟随外层 FrameLayout，按钮获得焦点时图标才会变色。
+      少了它，方向盘切到按钮上时底色变了、图标却不变，看起来像没选中。
+    -->
+    <style name="CtrlButtonIcon">
+        <item name="android:layout_width">@dimen/car_btn_icon_size</item>
+        <item name="android:layout_height">@dimen/car_btn_icon_size</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <!--
+      手机播放条上的圆形图标按钮（48dp，Material 最小触控边长）。
+
+      为什么不沿用 76dp 方块大按钮：那套会把播放条撑到 100dp+、把列表挤没。
+      手机竖屏列表才是主角，播放控制应该紧凑。
+    -->
+    <style name="MiniCtrlButton">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:background">@drawable/mini_btn_bg</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- 主播放键：比其它三个大一圈、橙底 -->
+    <style name="MiniCtrlButtonPrimary" parent="MiniCtrlButton">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:background">@drawable/mini_btn_bg_primary</item>
+    </style>
+
+    <!-- 手机按钮内的图标：22dp（按钮 48/56dp，约占 40%） -->
+    <style name="MiniCtrlIcon">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:duplicateParentState">true</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <!-- 手机收藏心形：未收藏灰、已收藏橙（与车机、列表行同一套判定） -->
+    <style name="MiniFavIcon" parent="MiniCtrlIcon">
+        <item name="android:tint">@color/fav_icon_tint</item>
+    </style>
+
+</resources>

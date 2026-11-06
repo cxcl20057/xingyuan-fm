@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  夜间主题（v2.1）
+  ============================================================
+
+  <h3>为什么要单独一份 AppTheme</h3>
+  style 资源按限定符「整体替换」而不是逐项合并：values-night 里同名
+  AppTheme 会覆盖白天那份，所以这里必须把白天的 item 全部再写一遍。
+  换父主题是为了让 AlertDialog / Toast / 系统控件也跟着变暗 ——
+  只换 @color 的话，白界面里会弹出深色对话框，反过来也一样。
+
+  <h3>状态栏</h3>
+  白天 windowLightStatusBar=true（深色状态栏图标配浅底），
+  夜间必须设 false，否则深色底上还是深色图标，等于看不见。
+
+  <h3>其它 style 不用重复</h3>
+  CtrlButton / MiniCtrlButton 等只在 values/styles.xml 里定义一次，
+  它们引用 @drawable 与 @color，夜间由颜色资源自动切换。
+-->
+<resources>
+
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+</resources>

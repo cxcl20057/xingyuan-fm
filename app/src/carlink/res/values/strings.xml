@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Carlink 版（星愿 FM）的字符串覆盖。
+
+  这个目录（src/carlink/res）只在 isCarlinkBuild 时通过
+  sourceSets.main.res.srcDirs 挂上去，正式构建完全看不到它。
+
+  ## 为什么用覆盖而不是直接改 src/main
+
+  AAPT 的合并规则是「同类型同名资源，后加入的源集覆盖先前的」。
+  这里是覆盖，不是新增——所以必须同名（app_name），不能叫 app_name_carlink。
+
+  为什么不干脆改 src/main/res/values/strings.xml：
+  那样正式版也会变成「星愿 FM」，而且两个包名共用一套代码，
+  一旦有人忘了切回来就混了。覆盖机制让差异只存在于 carlink 源集里，
+  正式版的 strings.xml 一个字节都不动。
+
+  ## 为什么要改名
+
+  用户要在同一台手机上**同时装**正式版和 Carlink 版。
+  两个 app 包名不同（com.rea.radio / net.joydao.radio），系统层面不冲突，
+  但如果桌面名称一样，用户根本分不清哪个是哪个——
+  点错了就是「以为在用车机版，其实开的是普通版」。
+-->
+<resources>
+    <string name="app_name">星愿 FM</string>
+</resources>
