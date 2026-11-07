@@ -9,31 +9,48 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * 更新地址的回归测试（v1.9.12）。
+ * 更新地址的回归测试（v1.9.12 立，v2.2.4 改注入式 URL 后重写）。
  *
  * <h3>为什么专门给「地址」写测试</h3>
- * 这条链路的 bug 不是解析错、也不是下载错，而是<b>仓库名写错了</b>：
- * UpdateChecker 里写死 {@code cxcl20057/xinyuan-radio}（正式版仓库），
- * 而 Carlink 版的 Release 全发在 {@code cxcl20057/xinyuan-radio-carlink}。
- * 匿名访问前者的 {@code /releases} 和 {@code /api/v1/.../releases} 都是 404，
- * 表现就是用户说的「链接根本点不开」。
+ * 这条链路的 bug 不是解析错、也不是下载错，而是<b>仓库/平台写错了</b>：
+ * v1.9.12 的问题是仓库名写死成正式版仓库，Carlink 版点「更新」拿到 404；
+ * v2.2.4 起正式版迁到 GitHub、私有版留在 Gitea，又多了一个「平台对不对」的坑。
  *
  * <p>这种错误类型检查器发现不了（两边都是合法字符串），只能靠断言
- * 「地址必须指向本渠道的仓库」把它钉住。改动 {@code app/build.gradle}
- * 里的 {@code UPDATE_REPO} 而忘记对齐 {@code UPDATE_CHANNEL}，这里会红。
+ * 「三条 URL 必须指向本渠道的平台与仓库」把它钉住。改动 {@code app/build.gradle}
+ * 里的 {@code UPDATE_API/UPDATE_PAGE/UPDATE_DL_BASE} 而忘记对齐
+ * {@code UPDATE_CHANNEL}，这里会红。
  */
 public class UpdateCheckerUrlTest {
 
-    /** 仓库全名必须和渠道对得上：carlink 渠道 → 带 -carlink 后缀的仓库。 */
+    private static final String GITEA_HOST = "https://git.cdctu.top:45666";
+    private static final String GITHUB_API_HOST = "https://api.github.com/repos/";
+    private static final String GITHUB_PAGE_HOST = "https://github.com/";
+
+    /**
+     * 正式版（公开）必须整组指向 GitHub，Carlink 版（私有）必须整组指向 Gitea。
+     *
+     * <p>「全空」放行：公开仓库不带私有渠道的更新源（构建时注入空串），
+     * 那种构建的这三条 URL 全为空，不是错误 —— 公开仓库本来就不发 carlink 包。
+     */
     @Test
-    public void repo_matches_channel() {
-        boolean carlink = "carlink".equals(BuildConfig.UPDATE_CHANNEL);
-        if (carlink) {
-            assertTrue("Carlink 渠道必须指向 xinyuan-radio-carlink，实际是 " + UpdateChecker.REPO,
-                    UpdateChecker.REPO.endsWith("/xinyuan-radio-carlink"));
+    public void update_urls_point_at_the_right_host_for_channel() {
+        String api = UpdateChecker.RELEASES_API;
+        String page = UpdateChecker.RELEASES_PAGE;
+        String dl = UpdateChecker.DL_BASE;
+        boolean allEmpty = api.isEmpty() && page.isEmpty() && dl.isEmpty();
+
+        if ("carlink".equals(BuildConfig.UPDATE_CHANNEL)) {
+            assertTrue("Carlink 渠道的更新源要么全空（公开仓库），要么必须走 Gitea：" + api,
+                    allEmpty || api.startsWith(GITEA_HOST + "/api/v1/repos/"));
+            assertTrue("Carlink 渠道的更新源要么全空（公开仓库），要么必须走 Gitea：" + page,
+                    allEmpty || page.startsWith(GITEA_HOST + "/"));
+            assertTrue("Carlink 渠道的更新源要么全空（公开仓库），要么必须走 Gitea：" + dl,
+                    allEmpty || dl.startsWith(GITEA_HOST + "/"));
         } else {
-            assertEquals("正式渠道必须指向 xinyuan-radio",
-                    "cxcl20057/xinyuan-radio", UpdateChecker.REPO);
+            assertTrue("正式版 API 必须走 GitHub：" + api, api.startsWith(GITHUB_API_HOST));
+            assertTrue("正式版网页必须走 GitHub：" + page, page.startsWith(GITHUB_PAGE_HOST));
+            assertTrue("正式版兜底直链必须走 GitHub：" + dl, dl.startsWith(GITHUB_PAGE_HOST));
         }
     }
 
@@ -42,38 +59,75 @@ public class UpdateCheckerUrlTest {
     public void api_and_page_point_at_the_same_repo() {
         String api = UpdateChecker.RELEASES_API;
         String page = UpdateChecker.RELEASES_PAGE;
-        String repo = UpdateChecker.REPO;
 
-        assertTrue(api, api.startsWith(UpdateChecker.GITEA_BASE + "/api/v1/repos/"));
-        assertTrue(api, api.contains("/" + repo + "/releases"));
-        assertTrue(api, api.endsWith("?limit=5"));
+        // 公开仓库的 carlink 分支注入空串：跳过
+        if (api.isEmpty() && page.isEmpty()) {
+            assertTrue("全空则兜底前缀也必须为空", UpdateChecker.DL_BASE.isEmpty());
+            return;
+        }
 
-        assertTrue(page, page.startsWith(UpdateChecker.GITEA_BASE + "/"));
-        assertTrue(page, page.contains("/" + repo + "/releases"));
+        // 从两条 URL 里抠出 owner/repo 段，必须一致
+        String repoFromApi = extractRepo(api);
+        String repoFromPage = extractRepo(page);
+        assertNotNull("API 里抠不出 owner/repo：" + api, repoFromApi);
+        assertEquals("API 与网页必须同仓：" + api + " / " + page, repoFromApi, repoFromPage);
+
+        // 仓库必须和渠道对得上：carlink → xinyuan-radio-carlink；正式 → xingyuan-fm
+        if ("carlink".equals(BuildConfig.UPDATE_CHANNEL)) {
+            assertEquals("cxcl20057/xinyuan-radio-carlink", repoFromApi);
+        } else {
+            assertEquals("cxcl20057/xingyuan-fm", repoFromApi);
+        }
+
+        // 各自路径形状
+        assertTrue(api, api.endsWith("/releases?limit=5") || api.endsWith("/releases?per_page=5"));
         assertTrue(page, page.endsWith("/releases"));
-
-        // 两个地址里出现的必须是同一个 owner/repo 段
-        assertTrue("API 与网页必须同仓：" + api + " / " + page, api.contains(repo) && page.contains(repo));
+        assertTrue("兜底前缀必须是 …/releases/download：" + UpdateChecker.DL_BASE,
+                UpdateChecker.DL_BASE.endsWith("/releases/download"));
     }
 
-    /** 旧实现里的正式版仓库不能出现在 Carlink 构建的地址里（这就是那个 404）。 */
+    /** 从「https://host/owner/repo/后续」里抠出 owner/repo（两平台的路径都从第 2 段开始）。 */
+    private static String extractRepo(String url) {
+        // 去协议与主机
+        int scheme = url.indexOf("://");
+        if (scheme < 0) return null;
+        int hostStart = scheme + 3;
+        // GitHub API 是 api.github.com/repos/owner/repo，网页是 github.com/owner/repo，
+        // Gitea 网页是 host/owner/repo、API 是 host/api/v1/repos/owner/repo。
+        // 统一处理：找到 "repos/" 或 "com/" 之后的第一个 owner/repo 段。
+        for (String marker : new String[]{"/repos/", "github.com/", "45666/"}) {
+            int i = url.indexOf(marker, hostStart);
+            if (i >= 0) {
+                String rest = url.substring(i + marker.length());
+                int slash = rest.indexOf('/');
+                if (slash > 0) {
+                    String candidate = rest.substring(0, slash);
+                    int slash2 = rest.indexOf('/', slash + 1);
+                    if (slash2 > 0 && !candidate.equals("api") && !candidate.equals("releases")) {
+                        return candidate + rest.substring(slash, slash2);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /** 平台不能串门：正式版不连私有 Git，Carlink 版不连 GitHub（公开仓库上没有它的包）。 */
     @Test
-    public void carlink_build_never_targets_official_repo() {
-        if (!"carlink".equals(BuildConfig.UPDATE_CHANNEL)) return;   // 正式构建不管这条
+    public void channels_never_cross_platforms() {
         String api = UpdateChecker.RELEASES_API;
         String page = UpdateChecker.RELEASES_PAGE;
-        // 注意：不能简单地 contains("xinyuan-radio") —— 后者是前者的子串
-        assertFalse(api, api.contains("/repos/cxcl20057/xinyuan-radio/"));
-        assertFalse(page, page.contains("/cxcl20057/xinyuan-radio/"));
-    }
+        String dl = UpdateChecker.DL_BASE;
 
-    /** 纯函数拼接：换任何仓库名都要拼得出来（不依赖编译期常量）。 */
-    @Test
-    public void url_builders_are_pure() {
-        assertEquals("https://git.cdctu.top:45666/api/v1/repos/owner/repo/releases?limit=5",
-                UpdateChecker.releasesApi("owner/repo"));
-        assertEquals("https://git.cdctu.top:45666/owner/repo/releases",
-                UpdateChecker.releasesPage("owner/repo"));
+        if ("carlink".equals(BuildConfig.UPDATE_CHANNEL)) {
+            assertFalse("Carlink 构建不得指向 GitHub：" + api, api.contains("github.com"));
+            assertFalse("Carlink 构建不得指向 GitHub：" + page, page.contains("github.com"));
+            assertFalse("Carlink 构建不得指向 GitHub：" + dl, dl.contains("github.com"));
+        } else {
+            assertFalse("正式构建不得指向私有 Gitea：" + api, api.contains("git.cdctu.top"));
+            assertFalse("正式构建不得指向私有 Gitea：" + page, page.contains("git.cdctu.top"));
+            assertFalse("正式构建不得指向私有 Gitea：" + dl, dl.contains("git.cdctu.top"));
+        }
     }
 
     /** 兜底 APK 名跟着渠道走，且空 tag 不能拼出「-null」。 */

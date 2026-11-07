@@ -144,16 +144,27 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!--
+              台名单行 + 自动缩字号（v2.2.4）：
+              ≤9 个字时 autoSizeTextType 会直接用上限 car_text_station（68sp），观感不变；
+              >9 个字时系统按实测宽度等比缩小字号直到单行放下（如 10 字约 61sp、
+              14 字约 44sp）；缩到下限 car_text_station_min 仍放不下才显示省略号。
+              之前 maxLines=2，长台名折到第二行会把按钮行挤到卡片底边。
+            -->
             <TextView
                 android:id="@+id/tv_station"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="@dimen/car_text_station_min"
+                android:autoSizeMaxTextSize="@dimen/car_text_station"
+                android:autoSizeStepGranularity="2sp"
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:nextFocusRight="@id/btn_fav_playing"
                 android:textColor="@color/text_primary"
                 android:textSize="@dimen/car_text_station" />

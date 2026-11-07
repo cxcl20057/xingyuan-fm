@@ -22,11 +22,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 应用内检查更新：查 Gitea Release → 下载 APK → 拉起系统安装器。
+ * 应用内检查更新：查 Release（正式版走 GitHub，Carlink 版走 Gitea）→ 下载 APK → 拉起系统安装器。
  *
  * <h3>为什么走 Release 页面而不是自己搭更新接口</h3>
- * 发布流程（{@code scripts/release.sh}）已经把每个版本打成 Gitea Release，
- * 里面既有 APK 也有改动说明。<b>GitHub/Gitea Release 本身就是一个更新接口</b>，
+ * 发布流程已经把每个版本打成 Release（v2.2.4 起正式版发 GitHub、私有版发 Gitea），
+ * 里面既有 APK 也有改动说明。<b>Release 本身就是一个更新接口</b>，
  * 没必要再造一套服务端。App 只依赖公开读的 Release API，不需要内置任何令牌。
  *
  * <h3>三条绕不开的约束（都实测过，不是猜的）</h3>
@@ -57,36 +57,30 @@ final class UpdateChecker {
 
     private static final String TAG = "更新";
 
-    /** Gitea 站点根地址。 */
-    static final String GITEA_BASE = "https://git.cdctu.top:45666";
-
     /**
-     * 本渠道对应的仓库（{@code owner/repo}）。
+     * 更新源三件套，构建时由 {@code app/build.gradle} 按渠道注入（v2.2.4 起）：
      *
-     * <p>构建时由 {@code app/build.gradle} 的 {@code UPDATE_REPO} 注入：
-     * 正式版 → {@code xinyuan-radio}，Carlink 版 → {@code xinyuan-radio-carlink}。
+     * <ul>
+     *   <li><b>正式版（公开）→ GitHub</b>：{@code cxcl20057/xingyuan-fm}，
+     *       Release API 与 Gitea 字段兼容（tag_name / assets[].browser_download_url），
+     *       只是 URL 形状不同，所以整条 URL 在 gradle 里拼好。</li>
+     *   <li><b>Carlink 版（私有）→ Gitea</b>（私有自建 Git，地址在私有仓库的构建配置里；
+     *       公开仓库的该渠道注入空串），和 v2.2.4 之前完全一样。</li>
+     * </ul>
      *
-     * <p>为什么必须分开：v1.9.11 及以前这里写死成正式版仓库，而 Carlink 版的
-     * Release 全发在另一个仓库，于是 Carlink 版点「更新」/「打开下载页」
-     * 拿到的是 404 —— 用户的原话是「链接根本点不开」。
+     * <p>历史上这里写死 {@code GITEA_BASE} + {@code REPO} 两个常量在代码里拼 URL，
+     * v2.2.4 起正式版迁到 GitHub，拼法不再统一，改为三条 URL 全部注入。
+     *
+     * <p>匿名可读，无需令牌；GitHub 匿名限额 60 次/小时（按 IP），「点按钮才检查」
+     * 的用量远够。
      */
-    static final String REPO = BuildConfig.UPDATE_REPO;
-
-    /** 拼 Release API 地址（纯函数，便于单测；{@code repo} 形如 {@code owner/name}）。 */
-    static String releasesApi(String repo) {
-        return GITEA_BASE + "/api/v1/repos/" + repo + "/releases?limit=5";
-    }
-
-    /** 拼 Release 网页地址。 */
-    static String releasesPage(String repo) {
-        return GITEA_BASE + "/" + repo + "/releases";
-    }
-
-    /** 仓库 Release 列表（匿名可读，无需令牌）。 */
-    static final String RELEASES_API = releasesApi(REPO);
+    static final String RELEASES_API = BuildConfig.UPDATE_API;
 
     /** 给人看的 Release 页（「打开下载页」按钮用它）。 */
-    static final String RELEASES_PAGE = releasesPage(REPO);
+    static final String RELEASES_PAGE = BuildConfig.UPDATE_PAGE;
+
+    /** assets 为空时兜底直链的前缀（{@code …/releases/download}）。 */
+    static final String DL_BASE = BuildConfig.UPDATE_DL_BASE;
 
     /** 连不上就算了，别让用户等。 */
     private static final int CONNECT_TIMEOUT_MS = 8000;
@@ -179,10 +173,10 @@ final class UpdateChecker {
                 r.apkSize = size == null ? 0 : parseLong(size);
             }
             if (r.apkUrl == null || r.apkUrl.isEmpty()) {
-                // assets 为空：按 Gitea 的约定路径兜底
+                // assets 为空：按约定路径兜底（GitHub 与 Gitea 的直链形状一致：
+                // <站点>/<owner/repo>/releases/download/<tag>/<文件名>）
                 String name = fallbackApkName(tag);
-                r.apkUrl = GITEA_BASE + "/" + REPO
-                        + "/releases/download/" + tag + "/" + encodePath(name);
+                r.apkUrl = DL_BASE + "/" + tag + "/" + encodePath(name);
                 r.apkName = name;
             }
 

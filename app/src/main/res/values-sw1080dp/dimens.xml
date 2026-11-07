@@ -22,6 +22,7 @@
 
     <dimen name="car_text_logo">120sp</dimen>
     <dimen name="car_text_station">68sp</dimen>
+    <dimen name="car_text_station_min">44sp</dimen>
     <dimen name="car_text_live">28sp</dimen>
     <dimen name="car_text_period">32sp</dimen>
     <dimen name="car_text_subtitle">30sp</dimen>

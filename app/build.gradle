@@ -70,11 +70,11 @@ android {
         applicationId "com.rea.radio"
         minSdk 21
         targetSdk 28
-        // 版本号跟主线走，本仓库在此基础上独立发版（v2.2.3 / versionCode 46）。
+        // 版本号跟主线走，本仓库在此基础上独立发版（v2.2.4 / versionCode 47）。
         // Carlink 包的 applicationId 是借来的白名单包名，与正式版互不影响，
         // 但同一个包名内部仍然只允许升不允许降，改版本时留意别比上次发的小。
-        versionCode 46
-        versionName "2.2.3"
+        versionCode 47
+        versionName "2.2.4"
 
         /*
          * 检查更新 / 打开下载页指向哪个仓库 —— 按构建渠道切换，别再写死了。
@@ -91,9 +91,28 @@ android {
          * 三处口径一致，不会出现「包名改了、更新地址没改」的半截状态。
          */
         buildConfigField "String", "UPDATE_REPO",
-                isCarlinkBuild ? '"cxcl20057/xinyuan-radio-carlink"' : '"cxcl20057/xinyuan-radio"'
+                isCarlinkBuild ? '"cxcl20057/xinyuan-radio-carlink"' : '"cxcl20057/xingyuan-fm"'
         buildConfigField "String", "UPDATE_CHANNEL",
                 isCarlinkBuild ? '"carlink"' : '"official"'
+        /*
+         * 更新源三件套（v2.2.4 起）：公开版（official）走 GitHub。
+         * 私有渠道（carlink）的更新源是私有 Git 地址，不随公开仓库分发 ——
+         * 这里注入空串；要构建私有渠道包请使用私有仓库的构建配置。
+         * 两个平台 Release API 的 JSON 字段（tag_name / assets[].browser_download_url 等）兼容，
+         * App 端解析代码不用分叉；只是 URL 形状不同，所以整条 URL 在这里注入。
+         *   UPDATE_API    Release 列表 API（匿名可读）
+         *   UPDATE_PAGE   给人看的 Release 页（「打开下载页」按钮）
+         *   UPDATE_DL_BASE assets 为空时兜底直链的前缀 <…>/releases/download
+         */
+        buildConfigField "String", "UPDATE_API",
+                isCarlinkBuild ? '""'
+                               : '"https://api.github.com/repos/cxcl20057/xingyuan-fm/releases?per_page=5"'
+        buildConfigField "String", "UPDATE_PAGE",
+                isCarlinkBuild ? '""'
+                               : '"https://github.com/cxcl20057/xingyuan-fm/releases"'
+        buildConfigField "String", "UPDATE_DL_BASE",
+                isCarlinkBuild ? '""'
+                               : '"https://github.com/cxcl20057/xingyuan-fm/releases/download"'
 
         if (isCarlinkBuild) {
             // 换包名。namespace（Java 包结构）保持不变，只改 applicationId——
