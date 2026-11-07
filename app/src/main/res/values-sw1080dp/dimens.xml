@@ -42,7 +42,7 @@
     <dimen name="car_dot_live">16dp</dimen>
     <dimen name="car_fav_btn_size">96dp</dimen>
     <dimen name="car_fav_icon_size">48dp</dimen>
-    <dimen name="car_btn_height">176dp</dimen>
+    <dimen name="car_btn_height">158dp</dimen>
     <dimen name="car_btn_icon_size">60dp</dimen>
     <dimen name="car_toolbar_height">72dp</dimen>
     <dimen name="car_tab_height">78dp</dimen>
@@ -67,5 +67,8 @@
     <dimen name="car_space_15">30dp</dimen>
     <dimen name="car_space_16">32dp</dimen>
     <dimen name="car_space_20">40dp</dimen>
+
+    <!-- 底部边距：保持 v2.2.2 的原边距，即默认值 12dp 的 2 倍。 -->
+    <dimen name="car_pad_bottom">24dp</dimen>
 
 </resources>

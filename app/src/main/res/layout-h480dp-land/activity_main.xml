@@ -31,6 +31,17 @@
 
   左 46% / 右 54%。这个比例与 PhoneLayout.useTwoColumn 的判据一致，
   改动比例时两边一起看。
+
+  ============================================================
+  v2.2.3 按钮行压矮 10%
+  ============================================================
+
+  <h3>只改了一处：上一台 / 播放 / 下一台三个键的高度</h3>
+  按 v2.2.2 版面，仅把按钮行 car_btn_height 从 176dp 收 10% 到 158dp，
+  其余尺寸（含底部边距 car_pad_bottom）一律保持 v2.2.2 不变。
+
+  根布局的 paddingBottom 单独抽成 @dimen/car_pad_bottom，是为了以后调
+  底部边距只动一处（值仍是 v2.2.2 的原边距）。
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -38,7 +49,10 @@
     android:background="@color/bg"
     android:baselineAligned="false"
     android:orientation="horizontal"
-    android:padding="@dimen/car_space_12">
+    android:paddingStart="@dimen/car_space_12"
+    android:paddingTop="@dimen/car_space_12"
+    android:paddingEnd="@dimen/car_space_12"
+    android:paddingBottom="@dimen/car_pad_bottom">
 
     <!-- ==================== 左：播放卡 ==================== -->
     <!--

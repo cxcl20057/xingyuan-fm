@@ -42,11 +42,11 @@
 
     <!-- ==================== 控件尺寸（dp） ==================== -->
 
-    <dimen name="car_logo_size">140dp</dimen>       <!-- 播放卡台标（圆角方） -->
+    <dimen name="car_logo_size">140dp</dimen>       <!-- 播放卡台标（圆角方）；车机侧 280dp，放不下时由自适应逻辑兜底缩 -->
     <dimen name="car_dot_live">8dp</dimen>          <!-- 直播橙色圆点 -->
     <dimen name="car_fav_btn_size">48dp</dimen>     <!-- 播放卡收藏键 -->
     <dimen name="car_fav_icon_size">24dp</dimen>    <!-- 收藏键内心形图标 -->
-    <dimen name="car_btn_height">88dp</dimen>       <!-- 上一台/播放/下一台 按钮高 -->
+    <dimen name="car_btn_height">79dp</dimen>       <!-- 上一台/播放/下一台 按钮高；车机侧 158dp（相对 176dp 收 10%） -->
     <dimen name="car_btn_icon_size">30dp</dimen>    <!-- 控制键内图标 -->
     <dimen name="car_toolbar_height">36dp</dimen>   <!-- 右栏顶栏高 -->
     <dimen name="car_tab_height">39dp</dimen>       <!-- 全部/收藏 标签行高 -->
@@ -71,5 +71,9 @@
     <dimen name="car_space_15">15dp</dimen>
     <dimen name="car_space_16">16dp</dimen>
     <dimen name="car_space_20">20dp</dimen>
+
+    <!-- 底部边距：原有卡片外边距（手机横屏 / Carlink 投屏均无车机悬浮 Dock，不让位）。 -->
+
+    <dimen name="car_pad_bottom">12dp</dimen>
 
 </resources>

@@ -365,21 +365,29 @@ public class MainActivity extends Activity {
                     - left.getPaddingTop() - left.getPaddingBottom();
             if (avail <= 0) return;
 
-            // 统计除台标外的固定内容高度
+            // 统计除台标外的固定内容高度（含上下外边距）
+            //
+            // 必须用「实测高度」而不是 layoutParams.height：
+            // wrap_content 的文本块 lp.height 是 -2，按 lp 判断只能落进 getHeight() 分支；
+            // 而间距是以 marginTop 的形式挂在每一项上的，旧代码只对固定高度项加了
+            // topMargin，wrap_content 项的间距全漏了 —— fixed 偏小 → 台标缩得不够 →
+            // 按钮行照样溢出卡片底部被裁掉（v2.2.3 真车实测：台标缩了 87dp，
+            // 按钮仍被裁 60 多 dp，就是这里算漏的）。
             int fixed = 0;
             for (int i = 0; i < ((ViewGroup) left).getChildCount(); i++) {
                 View child = ((ViewGroup) left).getChildAt(i);
                 if (child.getId() == R.id.logo_wrap
                         || child instanceof android.widget.Space) {
-                    continue;
+                    continue;   // 台标与两个弹性 Space 不参与固定高度
                 }
                 android.view.ViewGroup.LayoutParams lp = child.getLayoutParams();
-                if (lp != null && lp.height > 0) {
-                    fixed += lp.height;
-                    fixed += lp instanceof ViewGroup.MarginLayoutParams
-                            ? ((ViewGroup.MarginLayoutParams) lp).topMargin : 0;
-                } else {
-                    fixed += child.getHeight();
+                int h = child.getMeasuredHeight();
+                if (h <= 0 && lp != null && lp.height > 0) h = lp.height;
+                if (h <= 0) continue;
+                fixed += h;
+                if (lp instanceof ViewGroup.MarginLayoutParams) {
+                    ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) lp;
+                    fixed += mlp.topMargin + mlp.bottomMargin;
                 }
             }
             int logoH = ((ViewGroup) left).findViewById(R.id.logo_wrap).getHeight();
