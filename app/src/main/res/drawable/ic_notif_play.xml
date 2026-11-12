@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通知「播放」按钮图标（实心三角，Material "play_arrow"）。
+  路径与界面的 ic_play 完全一致，只是颜色写死纯白：
+  Android 11+ 媒体控件卡片是系统深底，白色是标准做法；
+  通知图标不随 App 白天/夜间主题换色，故不走 @color token。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8,5v14l11,-7z" />
+</vector>

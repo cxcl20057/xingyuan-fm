@@ -70,11 +70,11 @@ android {
         applicationId "com.rea.radio"
         minSdk 21
         targetSdk 28
-        // 版本号跟主线走，本仓库在此基础上独立发版（v2.2.4 / versionCode 47）。
+        // 版本号跟主线走，本仓库在此基础上独立发版（v2.2.5 / versionCode 50）。
         // Carlink 包的 applicationId 是借来的白名单包名，与正式版互不影响，
         // 但同一个包名内部仍然只允许升不允许降，改版本时留意别比上次发的小。
-        versionCode 47
-        versionName "2.2.4"
+        versionCode 50
+        versionName "2.2.5"
 
         /*
          * 检查更新 / 打开下载页指向哪个仓库 —— 按构建渠道切换，别再写死了。

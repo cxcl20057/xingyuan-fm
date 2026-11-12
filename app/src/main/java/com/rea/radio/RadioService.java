@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ServiceInfo;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
@@ -264,6 +265,20 @@ public class RadioService extends Service implements RadioPlayer.Listener, CallG
 
     // ------------------------------------------------------------ 通知
 
+    /**
+     * 台标刚落地时由界面调用（MainActivity.applyLogo 的回调）：
+     * 通知立即重建，大图位马上补上台标，不等下一次播放状态变化。
+     *
+     * <p>大图位只有 Carlink 的标准外观在用；正式包重建一次同内容通知也无副作用。
+     * 必须在主线程调用（构建通知要读播放器状态与 LruCache）。
+     */
+    public static void refreshNotification() {
+        RadioService s = current;
+        RadioPlayer p = s == null ? null : s.player;
+        if (p == null) return;
+        s.updateNotification(p.current(), p.isPlayWhenReady());
+    }
+
     private void createChannel() {
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationManager nm = getSystemService(NotificationManager.class);
@@ -282,16 +297,38 @@ public class RadioService extends Service implements RadioPlayer.Listener, CallG
         if (nm != null) nm.notify(NOTIF_ID, buildNotification(s, playing));
     }
 
+    /**
+     * 组装媒体通知。
+     *
+     * <p><b>v2.2.5：Carlink 包启用「标准安卓媒体通知」外观</b>，正式包保持历史样式：
+     * <ul>
+     *   <li>状态栏小图标：系统播放三角 ▶ → 自家收音机图标（{@code ic_stat_radio}，
+     *       纯白 alpha 蒙版，状态栏图标规范）；</li>
+     *   <li>台标大图：经典通知渲染（车机 Android 8、部分 ROM 的横幅/锁屏）左侧的
+     *       「专辑图」位以前从来没填——台标只写进了 MediaSession 元数据，
+     *       手机 Android 11+ 会把媒体通知转成媒体控件卡片（图取自元数据，有图），
+     *       经典渲染路径却没图。现在通知本身也带（{@link LogoLoader#cached}
+     *       只读内存/磁盘缓存，同步返回、绝不发网络请求）；</li>
+     *   <li>三个控制按钮：系统 {@code ic_media_*} 老图标 → 自家 Material 风矢量图标
+     *       （纯白，与 Android 11+ 媒体卡片的深底匹配）。</li>
+     * </ul>
+     *
+     * <p>门控判据用 {@code BuildConfig.UPDATE_CHANNEL}：与包名、签名、更新源同一口径
+     * （build.gradle 的 isCarlinkBuild），不会出现「包名换了、通知没换」的半截状态。
+     * 刻意不拆 flavor 源集：通知构建逻辑只保留这一份，正式/Carlink 不会漂移。
+     */
     private Notification buildNotification(RadioCnApi.Station s, boolean playing) {
         String title = s == null ? "星愿收音机" : s.title;
         String sub = s == null ? "准备中…" : (playing ? "正在播放 · FM 直播" : "已暂停");
+        boolean stdLook = "carlink".equals(BuildConfig.UPDATE_CHANNEL);
 
         Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(this, CHANNEL)
                 : new Notification.Builder(this);
         b.setContentTitle(title)
                 .setContentText(sub)
-                .setSmallIcon(android.R.drawable.ic_media_play)
+                .setSmallIcon(stdLook ? R.drawable.ic_stat_radio
+                        : android.R.drawable.ic_media_play)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
@@ -301,14 +338,24 @@ public class RadioService extends Service implements RadioPlayer.Listener, CallG
                                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
                 .addAction(new Notification.Action.Builder(
-                        android.R.drawable.ic_media_previous, "上一台",
-                        cmd(ACTION_PREV, 11)).build())
+                        stdLook ? R.drawable.ic_notif_prev
+                                : android.R.drawable.ic_media_previous,
+                        "上一台", cmd(ACTION_PREV, 11)).build())
                 .addAction(new Notification.Action.Builder(
-                        playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                        playing ? (stdLook ? R.drawable.ic_notif_pause
+                                : android.R.drawable.ic_media_pause)
+                                : (stdLook ? R.drawable.ic_notif_play
+                                : android.R.drawable.ic_media_play),
                         playing ? "暂停" : "播放", cmd(ACTION_TOGGLE, 12)).build())
                 .addAction(new Notification.Action.Builder(
-                        android.R.drawable.ic_media_next, "下一台",
-                        cmd(ACTION_NEXT, 13)).build());
+                        stdLook ? R.drawable.ic_notif_next
+                                : android.R.drawable.ic_media_next,
+                        "下一台", cmd(ACTION_NEXT, 13)).build());
+
+        if (stdLook && s != null) {
+            Bitmap logo = LogoLoader.cached(this, s.contentId);
+            if (logo != null) b.setLargeIcon(logo);
+        }
 
         if (Build.VERSION.SDK_INT >= 21) {
             Notification.MediaStyle style = new Notification.MediaStyle()

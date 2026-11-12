@@ -138,6 +138,9 @@ final class EasMediaCenter implements EasBridge.Sink {
     /** 上次上报的播放状态，用于只在新状态时记日志。 */
     private int lastPushedStatus = -1;
 
+    /** 上次上报的台名：切台时状态没变也要留一行日志，方便定位「媒体条不换台」。 */
+    private String lastPushedTitle;
+
     private boolean initStarted;
     /** 快速重试已用掉几次（到 {@link #FAST_RETRY_MS} 长度后转慢速）。 */
     private int fastRetryIndex;
@@ -467,6 +470,14 @@ final class EasMediaCenter implements EasBridge.Sink {
             pushListIfChanged(rp, t);
             boolean ok = api.updateMusicPlaybackState(t, info);
             if (!ok) AppLog.w(TAG, "updateMusicPlaybackState 返回 false");
+            // 台名变了就留一行：媒体条「切台不刷新」时，这行能证明我们到底推没推。
+            // 不能只靠状态日志——切台前后都是「播放中」，状态日志一行都不会打。
+            String pushedTitle = info.getTitle();
+            if (pushedTitle != null && !pushedTitle.equals(lastPushedTitle)) {
+                lastPushedTitle = pushedTitle;
+                AppLog.key(TAG, "推送台名 → " + pushedTitle
+                        + "（第 " + (info.getPlayingItemPositionInQueue() + 1) + " 项）");
+            }
             // 状态变了才记一条：装车排查「卡片按钮不跟着变」时，先看服务有没有收到播放。
             int st = info.getPlaybackStatus();
             if (st != lastPushedStatus) {

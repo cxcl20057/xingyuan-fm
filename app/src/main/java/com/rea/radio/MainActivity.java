@@ -746,6 +746,9 @@ public class MainActivity extends Activity {
                 tvLogo.setVisibility(View.GONE);
                 // 台标刚落地（内存/磁盘/网络）→ 补一次元数据，锁屏与通知栏才有 ART 图
                 if (player != null) player.refreshMetadata();
+                // 通知也立刻重建：Carlink 外观的台标大图位（setLargeIcon）取的是
+                // LogoLoader 缓存，此刻才有图，等下一次状态变化就晚了。
+                RadioService.refreshNotification();
             } else {
                 // 无台标（无 image 字段 / 断网且无缓存）→ 保留字标
                 view.setVisibility(View.GONE);

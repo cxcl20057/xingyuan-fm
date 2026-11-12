@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -191,6 +192,18 @@ public final class RadioPlayer {
     private Runnable prepareTimeout;
     private Runnable stallTimeout;
     private Listener listener;
+
+    /**
+     * 已推给 MediaSession 的队列指纹：内容不变就不重发整张表（Binder 事务不便宜，
+     * 而 updateSessionState 每次缓冲/暂停都会走一遍）。
+     */
+    private String publishedQueueKey;
+    /** 上次上报的曲目 id，变了才打一条诊断日志（不刷屏）。 */
+    private String publishedMediaId;
+    /** 切台后延迟补推一次元数据：车机在 BUFFERING 那一瞬可能没把标题读走。 */
+    private final Runnable republishMetadata = new Runnable() {
+        @Override public void run() { updateSessionState(); }
+    };
 
     /**
      * 已被证实「连得上、但一个字节都没有」的地址（HTTP 200 + 空 body）。
@@ -597,20 +610,32 @@ public final class RadioPlayer {
                         | PlaybackState.ACTION_SKIP_TO_NEXT
                         | PlaybackState.ACTION_SKIP_TO_PREVIOUS
                         | PlaybackState.ACTION_STOP)
+                // 车机/蓝牙媒体条靠「当前队列项变了没有」判断换曲。
+                // 不设它时 activeQueueItemId 恒为 UNKNOWN_ID，即便标题换了，
+                // 车机也认为是同一首歌在补元数据 —— 媒体条就永远停在第一次读到的台名。
+                .setActiveQueueItemId(index >= 0 ? index : MediaSession.QueueItem.UNKNOWN_ID)
                 .setState(state, pos, 1.0f, SystemClock.elapsedRealtime());
         session.setPlaybackState(b.build());
 
         RadioCnApi.Station s = current();
         if (s != null) {
+            String title = StationTitle.plain(s.title);
+            String artist = s.provinceName == null ? "广播直播" : s.provinceName;
+            String mediaId = mediaIdOf(s, index);
             MediaMetadata.Builder mb = new MediaMetadata.Builder()
-                    // 通知栏 / 锁屏 / 车机媒体卡片都显示这个标题。
-                    // 带频率（「四川城市之音（FM102.6）」）：媒体卡片上只有一个标题行，
-                    // 不在这儿补频率，用户在车里就永远看不到「这个是几频道」。
-                    .putString(MediaMetadata.METADATA_KEY_TITLE, StationTitle.plain(s.title))
-                    .putString(MediaMetadata.METADATA_KEY_ARTIST,
-                            s.provinceName == null ? "广播直播" : s.provinceName)
+                    // MEDIA_ID 是 AVRCP / 车机判断「换了一首」的首要字段；
+                    // 以前没填，车机把每次切台都当成同一曲，媒体条不刷新台名。
+                    .putString(MediaMetadata.METADATA_KEY_MEDIA_ID, mediaId)
+                    // 部分车机只读 DISPLAY_*，不读 TITLE/ARTIST，两套都给。
+                    .putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, title)
+                    .putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, artist)
+                    .putString(MediaMetadata.METADATA_KEY_TITLE, title)
+                    .putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
                     .putString(MediaMetadata.METADATA_KEY_ALBUM, "FM 直播")
-                    .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L);
+                    // 曲目序号也随切台变化，是多一重「换曲」信号（老 AVRCP 1.3 认它）。
+                    .putLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER, index + 1L)
+                    .putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, Math.max(queue.size(), 1))
+                    .putLong(MediaMetadata.METADATA_KEY_DURATION, 0L);
             // 台标：手机上锁屏媒体控件、通知栏大图、蓝牙车机都读这个字段。
             Bitmap art = LogoLoader.cached(app, s.contentId);
             if (art != null) {
@@ -618,6 +643,12 @@ public final class RadioPlayer {
                 mb.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
             }
             session.setMetadata(mb.build());
+            publishQueue();
+            if (!mediaId.equals(publishedMediaId)) {
+                publishedMediaId = mediaId;
+                AppLog.key("会话", "上报曲目 → " + title
+                        + "（第 " + (index + 1) + "/" + queue.size() + " 台，id=" + mediaId + "）");
+            }
         }
 
         // 车机媒体中心（v1.9.1）：把同一个状态再推一份过去。
@@ -627,6 +658,55 @@ public final class RadioPlayer {
         // 放这儿就不会出现「通知栏对了、媒体中心的卡片还是上一台」。
         // 没有注册媒体源时（非星愿车机、单元测试）EasBridge 是空操作。
         EasBridge.push(this);
+    }
+
+    /**
+     * 把当前队列交给 MediaSession。
+     *
+     * <p>投屏/蓝牙场景下，车机 Dock 那条媒体条不读 App 界面，也不读我们的通知，
+     * 它读的是手机媒体会话。{@code setActiveQueueItemId(index)} 只有配上真实队列
+     * 才成立（否则车机查不到这个 id 对应的条目，可能干脆显示空白），所以两者必须同时给。
+     *
+     * <p>队列项 id 直接用下标，与 {@code setActiveQueueItemId} 的取值一一对应；
+     * mediaId 用台站的 contentId，保证切台后 AVRCP 能看到「曲目身份变了」。
+     * 上限 300 与 EAS 列表一致：Binder 单次事务有 1MB 限制，宁可少列也不冒
+     * TransactionTooLarge 的险。
+     */
+    private void publishQueue() {
+        if (session == null) return;
+        String key = queue.size() + "|"
+                + (queue.isEmpty() ? "-" : mediaIdOf(queue.get(0), 0));
+        if (key.equals(publishedQueueKey)) return;
+        publishedQueueKey = key;
+        if (queue.isEmpty()) {
+            session.setQueue(null);
+            session.setQueueTitle(null);
+            return;
+        }
+        int n = Math.min(queue.size(), 300);
+        List<MediaSession.QueueItem> items = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            RadioCnApi.Station s = queue.get(i);
+            if (s == null) continue;
+            MediaDescription.Builder d = new MediaDescription.Builder()
+                    .setMediaId(mediaIdOf(s, i))
+                    .setTitle(StationTitle.plain(s.title))
+                    .setSubtitle(s.provinceName);
+            items.add(new MediaSession.QueueItem(d.build(), i));
+        }
+        try {
+            session.setQueue(items);
+            session.setQueueTitle("星愿电台");
+            AppLog.i("会话", "已上报媒体队列 " + items.size() + " 项");
+        } catch (Throwable t) {
+            AppLog.w("会话", "推送媒体队列失败：" + t);
+        }
+    }
+
+    /** 没拿到 contentId 的老台，用下标兜一个稳定 id，绝不让 mediaId 为 null。 */
+    private static String mediaIdOf(RadioCnApi.Station s, int index) {
+        return s == null || s.contentId == null || s.contentId.isEmpty()
+                ? "idx:" + index : s.contentId;
     }
 
     /**
@@ -646,6 +726,7 @@ public final class RadioPlayer {
     public void setQueue(List<RadioCnApi.Station> list, int startIndex, boolean autoPlay) {
         queue.clear();
         if (list != null) queue.addAll(list);
+        publishQueue();
         index = -1;
         playWhenReady = autoPlay;
         if (!queue.isEmpty()) {
@@ -661,6 +742,7 @@ public final class RadioPlayer {
     public void setQueueQuietly(List<RadioCnApi.Station> list, int startIndex, boolean autoPlay) {
         queue.clear();
         if (list != null) queue.addAll(list);
+        publishQueue();
         if (queue.isEmpty()) {
             index = -1;
             return;
@@ -720,6 +802,7 @@ public final class RadioPlayer {
         }
         queue.clear();
         queue.addAll(list);
+        publishQueue();
         playWhenReady = keepPlay;
 
         if (found < 0) {
@@ -780,6 +863,10 @@ public final class RadioPlayer {
         playWhenReady = true;
         AppLog.i(TAG, "切台 → " + (s == null ? "?" : s.title));
         openCurrent();
+        // 切台那一刻会话正处在 BUFFERING，部分车机只认「播放状态稳定」时读到的标题；
+        // 流就绪后再补推一份完整元数据（含此刻已落地的台标），保证媒体条跟着换。
+        main.removeCallbacks(republishMetadata);
+        main.postDelayed(republishMetadata, 1000L);
         if (listener != null) listener.onStationChanged(index, s);
     }
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通知小图标（状态栏用）：收音机造型，与 Carlink 包红色收音机图标同一形象。
+
+  <h3>为什么必须是纯白</h3>
+  Android 5.0 起状态栏图标按 alpha 蒙版渲染，系统会自己染色——
+  带颜色只会被拍扁成剪影，直接用白 + alpha 才是官方规范。
+  这里故意不用 @color token：通知图标不随 App 白天/夜间主题换色
+  （底色由系统控制），写死白色是正确做法。
+
+  <h3>画法</h3>
+  24×24 画布。机身圆角矩形 + 左侧调台圆孔（evenodd 挖洞）+ 右侧三道竖槽
+  （同样挖洞）+ 左上斜出的天线（独立子路径，不与机身重叠，
+  避免偶奇规则把重叠区错挖成洞）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M9.5,7 L15.8,2.4 L17,2.9 L10.7,7 Z
+            M5,7 H19 C20.1,7 21,7.9 21,9 V17 C21,18.1 20.1,19 19,19 H5 C3.9,19 3,18.1 3,17 V9 C3,7.9 3.9,7 5,7 Z
+            M5.1,13 a2.4,2.4 0 1,0 4.8,0 a2.4,2.4 0 1,0 -4.8,0 Z
+            M12.5,10.5 h1.4 v5 h-1.4 Z
+            M15.4,10.5 h1.4 v5 h-1.4 Z
+            M18.3,10.5 h1.4 v5 h-1.4 Z" />
+</vector>

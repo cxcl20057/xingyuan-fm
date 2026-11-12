@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通知「上一台」按钮图标（竖线 + 向左三角）。
+  路径与界面的 ic_skip_previous 一致，颜色写死纯白（理由见 ic_notif_play）。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6,6h2.2v12H6zM18,6l-8.6,6l8.6,6z" />
+</vector>
